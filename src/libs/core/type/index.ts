@@ -1,0 +1,1 @@
+export type IRecordKeyType = string | number | symbol;

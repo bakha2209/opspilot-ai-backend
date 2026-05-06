@@ -7,6 +7,7 @@ import { CompaniesModule } from './modules/companies/companies.module';
 import { UsersModule } from './modules/users/users.module';
 import { CompanyEntity, UserEntity } from './libs/database/entity';
 import { DatabaseModule } from './libs/database/database.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { DatabaseModule } from './libs/database/database.module';
     CompaniesModule,
     DatabaseModule,
     UsersModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
