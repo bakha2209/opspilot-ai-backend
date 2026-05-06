@@ -3,6 +3,10 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { CompaniesModule } from './modules/companies/companies.module';
+import { UsersModule } from './modules/users/users.module';
+import { CompanyEntity, UserEntity } from './libs/database/entity';
+import { DatabaseModule } from './libs/database/database.module';
 
 @Module({
   imports: [
@@ -19,10 +23,14 @@ import { AppService } from './app.service';
         username: configService.get<string>('DB_USERNAME'),
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_DATABASE'),
-        autoLoadEntities: true,
+        entities: [CompanyEntity, UserEntity],
         synchronize: true, // development only
       }),
     }),
+
+    CompaniesModule,
+    DatabaseModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
