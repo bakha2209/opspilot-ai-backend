@@ -108,4 +108,14 @@ export class AuthService {
     const { password, ...safeUser } = user;
     return safeUser;
   }
+
+  async profile(userId: string) {
+  const user = await this.userRepository.findById(userId);
+
+  if (!user) {
+    throw new UnauthorizedException('User not found');
+  }
+
+  return apiSuccess('Profile retrieved successfully', this.sanitizeUser(user));
+}
 }
