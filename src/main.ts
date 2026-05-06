@@ -4,6 +4,7 @@ import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -27,12 +28,16 @@ async function bootstrap() {
     }),
   );
 
+app.useGlobalFilters(new HttpExceptionFilter());  
+
   const swaggerConfig = new DocumentBuilder()
     .setTitle('OpsPilot AI API')
     .setDescription('AI Operations Copilot Backend API')
     .setVersion('1.0.0')
     .addBearerAuth()
     .build();
+
+    
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('docs', app, document);
