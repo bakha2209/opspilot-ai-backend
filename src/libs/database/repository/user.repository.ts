@@ -22,4 +22,21 @@ export class UserRepository extends OrmRepository<UserEntity> {
       relations: { company: true },
     });
   }
+
+  async findByCompanyId(companyId: string): Promise<UserEntity[]> {
+    return this.findItemMany({
+      where: { companyId },
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  async findByIdAndCompanyId(
+    id: string,
+    companyId: string,
+  ): Promise<UserEntity | null> {
+    return this.findItemOne({
+      where: { id, companyId },
+      relations: { company: true },
+    });
+  }
 }

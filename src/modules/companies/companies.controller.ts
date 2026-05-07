@@ -13,6 +13,8 @@ import { Auth } from '../auth/decorators/auth.decorator';
 import { CompaniesService } from './companies.service';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import type { AuthPayload } from '../auth/types/auth-payload.type';
 
 @ApiTags('Companies')
 @ApiBearerAuth()
@@ -37,8 +39,8 @@ export class CompaniesController {
   @Get(':id')
   @Auth(UserRole.SUPER_ADMIN, UserRole.COMPANY_ADMIN)
   @ApiOperation({ summary: 'Get company by ID' })
-  findOne(@Param('id') id: string) {
-    return this.companiesService.findOne(id);
+  findOne(@Param('id') id: string, @CurrentUser() currentUser: AuthPayload) {
+    return this.companiesService.findOne(id, currentUser);
   }
 
   @Patch(':id')
