@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
 import {
   CompanyRepository,
+  InventoryRepository,
   ProductRepository,
+  StockMovementRepository,
   UserRepository,
   WarehouseRepository,
 } from './repository';
@@ -17,12 +19,16 @@ import { DatabaseSeederService, SuperAdminSeeder } from './seeder';
     WarehouseRepository,
     SuperAdminSeeder,
     DatabaseSeederService,
+    InventoryRepository,
+    StockMovementRepository,
   ],
   exports: [
     CompanyRepository,
     UserRepository,
     WarehouseRepository,
     ProductRepository,
+    InventoryRepository,
+    StockMovementRepository,
   ],
 })
 export class DatabaseModule {}

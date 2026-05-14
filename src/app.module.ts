@@ -5,11 +5,13 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CompaniesModule } from './modules/companies/companies.module';
 import { UsersModule } from './modules/users/users.module';
-import { CompanyEntity, ProductEntity, UserEntity, WarehouseEntity } from './libs/database/entity';
+import { CompanyEntity, InventoryEntity, ProductEntity, StockMovementEntity, UserEntity, WarehouseEntity } from './libs/database/entity';
 import { DatabaseModule } from './libs/database/database.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { WarehousesModule } from './modules/warehouses/warehouses.module';
 import { ProductsModule } from './modules/products/products.module';
+import { InventoryModule } from './modules/inventory/inventory.module';
+import { StockMovementsModule } from './modules/stock-movements/stock-movements.module';
 
 @Module({
   imports: [
@@ -30,7 +32,14 @@ import { ProductsModule } from './modules/products/products.module';
           username: configService.get<string>('DB_USERNAME'),
           password: configService.get<string>('DB_PASSWORD'),
           database: configService.get<string>('DB_DATABASE'),
-          entities: [CompanyEntity, UserEntity,WarehouseEntity, ProductEntity],
+          entities: [
+            CompanyEntity,
+            UserEntity,
+            WarehouseEntity,
+            ProductEntity,
+            InventoryEntity,
+            StockMovementEntity,
+          ],
           synchronize,
         };
       },
@@ -42,6 +51,8 @@ import { ProductsModule } from './modules/products/products.module';
     AuthModule,
     WarehousesModule,
     ProductsModule,
+    InventoryModule,
+    StockMovementsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
