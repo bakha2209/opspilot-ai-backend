@@ -1,0 +1,36 @@
+import { Injectable } from '@nestjs/common';
+import { DataSource } from 'typeorm';
+import { OrmRepository } from '../../core/typeorm/orm.repository';
+import { NotificationEntity } from '../entity';
+
+@Injectable()
+export class NotificationRepository extends OrmRepository<NotificationEntity> {
+  constructor(readonly dataSource: DataSource) {
+    super(NotificationEntity, dataSource, 'NotificationRepository');
+  }
+
+  async findByCompanyId(companyId: string): Promise<NotificationEntity[]> {
+    return this.findItemMany({
+      where: { companyId },
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  async findUnreadByCompanyId(
+    companyId: string,
+  ): Promise<NotificationEntity[]> {
+    return this.findItemMany({
+      where: { companyId, isRead: false },
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  async findByIdAndCompanyId(
+    id: string,
+    companyId: string,
+  ): Promise<NotificationEntity | null> {
+    return this.findItemOne({
+      where: { id, companyId },
+    });
+  }
+}

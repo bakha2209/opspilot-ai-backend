@@ -8,6 +8,7 @@ import { DataSource } from 'typeorm';
 import { UserRole } from '../../common/enums/user-role.enum';
 import {
   InventoryEntity,
+  NotificationType,
   StockMovementEntity,
   StockMovementType,
 } from '../../libs/database/entity';
@@ -21,6 +22,7 @@ import { AuthPayload } from '../auth/types/auth-payload.type';
 import { AdjustInventoryDto } from './dto/adjust-inventory.dto';
 import { StockMovementInputDto } from './dto/stock-movement-input.dto';
 import { apiSuccess } from '../../common/utils/api-response.utils';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class InventoryService {
@@ -30,6 +32,7 @@ export class InventoryService {
     private readonly stockMovementRepository: StockMovementRepository,
     private readonly warehouseRepository: WarehouseRepository,
     private readonly productRepository: ProductRepository,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async findAll(currentUser: AuthPayload) {
@@ -46,6 +49,43 @@ export class InventoryService {
     const inventory = await this.inventoryRepository.findByCompanyId(companyId);
 
     return apiSuccess('Inventory retrieved successfully', inventory);
+  }
+
+  private async checkLowStockAndNotify(
+    companyId: string,
+    warehouseId: string,
+    productId: string,
+    currentQuantity: number,
+  ) {
+    const product = await this.productRepository.findByIdAndCompanyId(
+      productId,
+      companyId,
+    );
+
+    if (!product) return;
+
+    if (currentQuantity > product.safetyStock) return;
+
+    const warehouse = await this.warehouseRepository.findByIdAndCompanyId(
+      warehouseId,
+      companyId,
+    );
+
+    await this.notificationsService.createSystemNotification({
+      companyId,
+      type: NotificationType.LOW_STOCK,
+      title: 'Low stock detected',
+      message: `${product.name} is below or equal to safety stock. Current quantity: ${currentQuantity}, safety stock: ${product.safetyStock}.`,
+      metadata: {
+        productId,
+        productName: product.name,
+        sku: product.sku,
+        warehouseId,
+        warehouseName: warehouse?.name ?? null,
+        currentQuantity,
+        safetyStock: product.safetyStock,
+      },
+    });
   }
 
   async stockIn(currentUser: AuthPayload, dto: StockMovementInputDto) {
@@ -116,6 +156,13 @@ export class InventoryService {
 
       await manager.getRepository(StockMovementEntity).save(movement);
 
+      await this.checkLowStockAndNotify(
+        companyId,
+        savedInventory.warehouseId,
+        savedInventory.productId,
+        savedInventory.quantity,
+      );
+
       return apiSuccess('Inventory adjusted successfully', savedInventory);
     });
   }
@@ -183,6 +230,13 @@ export class InventoryService {
       });
 
       await manager.getRepository(StockMovementEntity).save(movement);
+
+      await this.checkLowStockAndNotify(
+        companyId,
+        savedInventory.warehouseId,
+        savedInventory.productId,
+        savedInventory.quantity,
+      );
 
       return apiSuccess('Stock movement applied successfully', savedInventory);
     });

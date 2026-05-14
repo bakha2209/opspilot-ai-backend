@@ -5,13 +5,14 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CompaniesModule } from './modules/companies/companies.module';
 import { UsersModule } from './modules/users/users.module';
-import { CompanyEntity, InventoryEntity, ProductEntity, StockMovementEntity, UserEntity, WarehouseEntity } from './libs/database/entity';
+import { CompanyEntity, InventoryEntity, NotificationEntity, ProductEntity, StockMovementEntity, UserEntity, WarehouseEntity } from './libs/database/entity';
 import { DatabaseModule } from './libs/database/database.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { WarehousesModule } from './modules/warehouses/warehouses.module';
 import { ProductsModule } from './modules/products/products.module';
 import { InventoryModule } from './modules/inventory/inventory.module';
 import { StockMovementsModule } from './modules/stock-movements/stock-movements.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { StockMovementsModule } from './modules/stock-movements/stock-movements.
             ProductEntity,
             InventoryEntity,
             StockMovementEntity,
+            NotificationEntity,
           ],
           synchronize,
         };
@@ -53,6 +55,7 @@ import { StockMovementsModule } from './modules/stock-movements/stock-movements.
     ProductsModule,
     InventoryModule,
     StockMovementsModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
