@@ -5,10 +5,11 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CompaniesModule } from './modules/companies/companies.module';
 import { UsersModule } from './modules/users/users.module';
-import { CompanyEntity, UserEntity, WarehouseEntity } from './libs/database/entity';
+import { CompanyEntity, ProductEntity, UserEntity, WarehouseEntity } from './libs/database/entity';
 import { DatabaseModule } from './libs/database/database.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { WarehousesModule } from './modules/warehouses/warehouses.module';
+import { ProductsModule } from './modules/products/products.module';
 
 @Module({
   imports: [
@@ -29,7 +30,7 @@ import { WarehousesModule } from './modules/warehouses/warehouses.module';
           username: configService.get<string>('DB_USERNAME'),
           password: configService.get<string>('DB_PASSWORD'),
           database: configService.get<string>('DB_DATABASE'),
-          entities: [CompanyEntity, UserEntity,WarehouseEntity],
+          entities: [CompanyEntity, UserEntity,WarehouseEntity, ProductEntity],
           synchronize,
         };
       },
@@ -40,6 +41,7 @@ import { WarehousesModule } from './modules/warehouses/warehouses.module';
     UsersModule,
     AuthModule,
     WarehousesModule,
+    ProductsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
