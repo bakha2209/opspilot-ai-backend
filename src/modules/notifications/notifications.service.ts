@@ -11,6 +11,7 @@ import {
 import { NotificationRepository } from '../../libs/database/repository';
 import { AuthPayload } from '../auth/types/auth-payload.type';
 import { apiSuccess } from '../../common/utils/api-response.utils';
+import { RealtimeGateway } from '../realtime/realtime/realtime.gateway';
 
 type CreateNotificationInput = {
   companyId: string;
@@ -25,10 +26,11 @@ type CreateNotificationInput = {
 export class NotificationsService {
   constructor(
     private readonly notificationRepository: NotificationRepository,
+    private readonly realtimeGateway: RealtimeGateway,
   ) {}
 
   async createSystemNotification(input: CreateNotificationInput) {
-    return this.notificationRepository.createAndSaveItem({
+    const notification = await this.notificationRepository.createAndSaveItem({
       companyId: input.companyId,
       userId: input.userId ?? null,
       type: input.type,
@@ -37,6 +39,18 @@ export class NotificationsService {
       metadata: input.metadata ?? null,
       isRead: false,
     } as Partial<NotificationEntity>);
+
+    this.realtimeGateway.emitNotificationToCompany(input.companyId, {
+      id: notification.id,
+      type: notification.type,
+      title: notification.title,
+      message: notification.message,
+      metadata: notification.metadata,
+      isRead: notification.isRead,
+      createdAt: notification.createdAt,
+    });
+
+    return notification;
   }
 
   async findAll(currentUser: AuthPayload) {

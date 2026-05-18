@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>OpsPilot WebSocket Test</title>
+  </head>
+  <body>
+    <h2>OpsPilot AI WebSocket Test</h2>
+
+    <input id="token" placeholder="Paste access token" style="width: 700px" />
+    <button onclick="connect()">Connect</button>
+    <button onclick="sendPing()">Ping</button>
+
+    <pre id="log"></pre>
+
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script>
+      let socket;
+
+      function log(message) {
+        const el = document.getElementById('log');
+        el.textContent += JSON.stringify(message, null, 2) + '\n\n';
+      }
+
+      function connect() {
+        const token = document.getElementById('token').value;
+
+        socket = io('http://localhost:4000/realtime', {
+          auth: {
+            token,
+          },
+          transports: ['websocket'],
+        });
+
+        socket.on('connect', () => {
+          log({ event: 'connect', socketId: socket.id });
+        });
+
+        socket.on('connected', (data) => {
+          log({ event: 'connected', data });
+        });
+
+        socket.on('notification.created', (data) => {
+          log({ event: 'notification.created', data });
+        });
+
+        socket.on('disconnect', () => {
+          log({ event: 'disconnect' });
+        });
+
+        socket.on('connect_error', (error) => {
+          log({ event: 'connect_error', message: error.message });
+        });
+      }
+
+      function sendPing() {
+        socket.emit('ping', { message: 'hello from browser' }, (response) => {
+          log({ event: 'pong_response', response });
+        });
+      }
+    </script>
+  </body>
+</html>
