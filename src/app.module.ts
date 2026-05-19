@@ -14,6 +14,7 @@ import { InventoryModule } from './modules/inventory/inventory.module';
 import { StockMovementsModule } from './modules/stock-movements/stock-movements.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { RealtimeModule } from './modules/realtime/realtime.module';
+import { EventsModule } from './modules/events/events.module';
 
 @Module({
   imports: [
@@ -58,6 +59,7 @@ import { RealtimeModule } from './modules/realtime/realtime.module';
     StockMovementsModule,
     NotificationsModule,
     RealtimeModule,
+    EventsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -23,6 +23,8 @@ import { AdjustInventoryDto } from './dto/adjust-inventory.dto';
 import { StockMovementInputDto } from './dto/stock-movement-input.dto';
 import { apiSuccess } from '../../common/utils/api-response.utils';
 import { NotificationsService } from '../notifications/notifications.service';
+import { EventsService } from '../events/events.service';
+import { EventName } from '../events/constants/event-name.constant';
 
 @Injectable()
 export class InventoryService {
@@ -33,6 +35,7 @@ export class InventoryService {
     private readonly warehouseRepository: WarehouseRepository,
     private readonly productRepository: ProductRepository,
     private readonly notificationsService: NotificationsService,
+    private readonly eventsService: EventsService,
   ) {}
 
   async findAll(currentUser: AuthPayload) {
@@ -71,21 +74,35 @@ export class InventoryService {
       companyId,
     );
 
-    await this.notificationsService.createSystemNotification({
-      companyId,
-      type: NotificationType.LOW_STOCK,
-      title: 'Low stock detected',
-      message: `${product.name} is below or equal to safety stock. Current quantity: ${currentQuantity}, safety stock: ${product.safetyStock}.`,
-      metadata: {
-        productId,
-        productName: product.name,
-        sku: product.sku,
-        warehouseId,
-        warehouseName: warehouse?.name ?? null,
-        currentQuantity,
-        safetyStock: product.safetyStock,
+    const metadata = {
+      productId,
+      productName: product.name,
+      sku: product.sku,
+      warehouseId,
+      warehouseName: warehouse?.name ?? null,
+      currentQuantity,
+      safetyStock: product.safetyStock,
+    };
+
+    const notification =
+      await this.notificationsService.createSystemNotification({
+        companyId,
+        type: NotificationType.LOW_STOCK,
+        title: 'Low stock detected',
+        message: `${product.name} is below or equal to safety stock. Current quantity: ${currentQuantity}, safety stock: ${product.safetyStock}.`,
+        metadata,
+      });
+
+    await this.eventsService.publish(
+      EventName.LOW_STOCK_DETECTED,
+      {
+        notificationId: notification.id,
+        ...metadata,
       },
-    });
+      {
+        companyId,
+      },
+    );
   }
 
   async stockIn(currentUser: AuthPayload, dto: StockMovementInputDto) {
@@ -154,7 +171,28 @@ export class InventoryService {
         memo: dto.memo,
       });
 
-      await manager.getRepository(StockMovementEntity).save(movement);
+      const savedMovement = await manager
+        .getRepository(StockMovementEntity)
+        .save(movement);
+
+      await this.eventsService.publish(
+        EventName.STOCK_MOVEMENT_CREATED,
+        {
+          movementId: savedMovement.id,
+          inventoryId: savedInventory.id,
+          warehouseId: savedInventory.warehouseId,
+          productId: savedInventory.productId,
+          type: StockMovementType.ADJUSTMENT,
+          quantity: Math.abs(afterQuantity - beforeQuantity),
+          beforeQuantity,
+          afterQuantity,
+          reason: dto.reason ?? null,
+        },
+        {
+          companyId,
+          actorId: currentUser.sub,
+        },
+      );
 
       await this.checkLowStockAndNotify(
         companyId,
@@ -229,7 +267,28 @@ export class InventoryService {
         memo: dto.memo,
       });
 
-      await manager.getRepository(StockMovementEntity).save(movement);
+      const savedMovement = await manager
+        .getRepository(StockMovementEntity)
+        .save(movement);
+
+      await this.eventsService.publish(
+        EventName.STOCK_MOVEMENT_CREATED,
+        {
+          movementId: savedMovement.id,
+          inventoryId: savedInventory.id,
+          warehouseId: savedInventory.warehouseId,
+          productId: savedInventory.productId,
+          type,
+          quantity: dto.quantity,
+          beforeQuantity,
+          afterQuantity,
+          reason: dto.reason ?? null,
+        },
+        {
+          companyId,
+          actorId: currentUser.sub,
+        },
+      );
 
       await this.checkLowStockAndNotify(
         companyId,
