@@ -25,6 +25,7 @@ import { apiSuccess } from '../../common/utils/api-response.utils';
 import { NotificationsService } from '../notifications/notifications.service';
 import { EventsService } from '../events/events.service';
 import { EventName } from '../events/constants/event-name.constant';
+import { ReorderRequestsService } from '../reorder-requests/reorder-requests.service';
 
 @Injectable()
 export class InventoryService {
@@ -36,6 +37,7 @@ export class InventoryService {
     private readonly productRepository: ProductRepository,
     private readonly notificationsService: NotificationsService,
     private readonly eventsService: EventsService,
+    private readonly reorderRequestsService: ReorderRequestsService,
   ) {}
 
   async findAll(currentUser: AuthPayload) {
@@ -91,6 +93,14 @@ export class InventoryService {
         title: 'Low stock detected',
         message: `${product.name} is below or equal to safety stock. Current quantity: ${currentQuantity}, safety stock: ${product.safetyStock}.`,
         metadata,
+      });
+
+      await this.reorderRequestsService.createAutomaticLowStockRequest({
+        companyId,
+        warehouseId,
+        productId,
+        currentQuantity,
+        safetyStock: product.safetyStock,
       });
 
     await this.eventsService.publish(

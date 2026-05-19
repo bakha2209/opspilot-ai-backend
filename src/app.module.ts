@@ -5,7 +5,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CompaniesModule } from './modules/companies/companies.module';
 import { UsersModule } from './modules/users/users.module';
-import { CompanyEntity, InventoryEntity, NotificationEntity, ProductEntity, StockMovementEntity, UserEntity, WarehouseEntity } from './libs/database/entity';
+import { CompanyEntity, InventoryEntity, NotificationEntity, ProductEntity, ReorderRequestEntity, StockMovementEntity, UserEntity, WarehouseEntity } from './libs/database/entity';
 import { DatabaseModule } from './libs/database/database.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { WarehousesModule } from './modules/warehouses/warehouses.module';
@@ -15,6 +15,7 @@ import { StockMovementsModule } from './modules/stock-movements/stock-movements.
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { RealtimeModule } from './modules/realtime/realtime.module';
 import { EventsModule } from './modules/events/events.module';
+import { ReorderRequestsModule } from './modules/reorder-requests/reorder-requests.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { EventsModule } from './modules/events/events.module';
             InventoryEntity,
             StockMovementEntity,
             NotificationEntity,
+            ReorderRequestEntity
           ],
           synchronize,
         };
@@ -60,6 +62,7 @@ import { EventsModule } from './modules/events/events.module';
     NotificationsModule,
     RealtimeModule,
     EventsModule,
+    ReorderRequestsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -4,6 +4,7 @@ import {
   InventoryRepository,
   NotificationRepository,
   ProductRepository,
+  ReorderRequestRepository,
   StockMovementRepository,
   UserRepository,
   WarehouseRepository,
@@ -23,6 +24,7 @@ import { DatabaseSeederService, SuperAdminSeeder } from './seeder';
     InventoryRepository,
     StockMovementRepository,
     NotificationRepository,
+    ReorderRequestRepository,
   ],
   exports: [
     CompanyRepository,
@@ -32,6 +34,7 @@ import { DatabaseSeederService, SuperAdminSeeder } from './seeder';
     InventoryRepository,
     StockMovementRepository,
     NotificationRepository,
+    ReorderRequestRepository,
   ],
 })
 export class DatabaseModule {}

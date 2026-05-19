@@ -6,3 +6,4 @@ export * from './product.entity';
 export * from './inventory.entity';
 export * from './stock-movement.entity';
 export * from './notification.entity';
+export * from './reorder-request.entity';
