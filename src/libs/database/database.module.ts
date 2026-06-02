@@ -10,7 +10,7 @@ import {
   WarehouseRepository,
 } from './repository';
 import { SecurityModule } from '../core/security';
-import { DatabaseSeederService, SuperAdminSeeder } from './seeder';
+import { DatabaseSeederService, DemoDataSeeder, SuperAdminSeeder } from './seeder';
 
 @Module({
   imports: [SecurityModule],
@@ -25,6 +25,8 @@ import { DatabaseSeederService, SuperAdminSeeder } from './seeder';
     StockMovementRepository,
     NotificationRepository,
     ReorderRequestRepository,
+    DemoDataSeeder,
+    SuperAdminSeeder,
   ],
   exports: [
     CompanyRepository,
