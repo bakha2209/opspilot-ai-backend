@@ -5,12 +5,12 @@ export class CreateProductDto {
   @ApiProperty({ example: 'Industrial Motor A' })
   @IsString()
   @MaxLength(200)
-  name: string;
+  name!: string;
 
   @ApiProperty({ example: 'MOTOR-A-001' })
   @IsString()
   @MaxLength(100)
-  sku: string;
+  sku!: string;
 
   @ApiPropertyOptional({
     example: 'High performance industrial motor',

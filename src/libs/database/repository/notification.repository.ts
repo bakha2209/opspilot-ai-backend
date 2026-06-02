@@ -33,4 +33,13 @@ export class NotificationRepository extends OrmRepository<NotificationEntity> {
       where: { id, companyId },
     });
   }
+
+  async countUnreadByCompanyId(companyId: string): Promise<number> {
+    return this.count({
+      where: {
+        companyId,
+        isRead: false,
+      },
+    });
+  }
 }

@@ -5,11 +5,11 @@ export class LoginDto {
   @ApiProperty({ example: 'admin@topparts.com' })
   @IsEmail()
   @MaxLength(150)
-  email: string;
+  email!: string;
 
   @ApiProperty({ example: 'Password123!' })
   @IsString()
   @MinLength(8)
   @MaxLength(50)
-  password: string;
+  password!: string;
 }

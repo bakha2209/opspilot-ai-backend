@@ -33,4 +33,10 @@ export class ProductRepository extends OrmRepository<ProductEntity> {
       where: { sku, companyId },
     });
   }
+
+  async countByCompanyId(companyId: string): Promise<number> {
+    return this.count({
+      where: { companyId },
+    });
+  }
 }

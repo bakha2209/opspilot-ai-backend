@@ -16,6 +16,8 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { RealtimeModule } from './modules/realtime/realtime.module';
 import { EventsModule } from './modules/events/events.module';
 import { ReorderRequestsModule } from './modules/reorder-requests/reorder-requests.module';
+import { AiCopilotModule } from './modules/ai-copilot/ai-copilot.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -63,6 +65,8 @@ import { ReorderRequestsModule } from './modules/reorder-requests/reorder-reques
     RealtimeModule,
     EventsModule,
     ReorderRequestsModule,
+    AiCopilotModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [AppService],

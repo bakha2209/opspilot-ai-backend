@@ -11,16 +11,16 @@ import {
 export class StockMovementInputDto {
   @ApiProperty({ example: 'warehouse-uuid' })
   @IsUUID()
-  warehouseId: string;
+  warehouseId!: string;
 
   @ApiProperty({ example: 'product-uuid' })
   @IsUUID()
-  productId: string;
+  productId!: string;
 
   @ApiProperty({ example: 10 })
   @IsInt()
   @Min(1)
-  quantity: number;
+  quantity!: number;
 
   @ApiPropertyOptional({ example: 'Initial stock registration' })
   @IsOptional()

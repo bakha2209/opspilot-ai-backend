@@ -6,23 +6,23 @@ export class CreateCompanyUserDto {
   @ApiProperty({ example: 'staff@topparts.com' })
   @IsEmail()
   @MaxLength(150)
-  email: string;
+  email!: string;
 
   @ApiProperty({ example: 'Warehouse Staff' })
   @IsString()
   @MaxLength(100)
-  name: string;
+  name!: string;
 
   @ApiProperty({ example: 'Password123!' })
   @IsString()
   @MinLength(8)
   @MaxLength(50)
-  password: string;
+  password!: string;
 
   @ApiProperty({
     enum: [UserRole.OPERATIONS_MANAGER, UserRole.WAREHOUSE_STAFF],
     example: UserRole.WAREHOUSE_STAFF,
   })
   @IsEnum(UserRole)
-  role: UserRole;
+  role!: UserRole;
 }

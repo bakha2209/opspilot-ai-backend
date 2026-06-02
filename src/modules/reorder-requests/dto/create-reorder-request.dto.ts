@@ -11,18 +11,18 @@ import {
 export class CreateReorderRequestDto {
   @ApiProperty()
   @IsUUID()
-  warehouseId: string;
+  warehouseId!: string;
 
   @ApiProperty()
   @IsUUID()
-  productId: string;
+  productId!: string;
 
   @ApiProperty({
     example: 100,
   })
   @IsInt()
   @Min(1)
-  recommendedQuantity: number;
+  recommendedQuantity!: number;
 
   @ApiPropertyOptional()
   @IsOptional()

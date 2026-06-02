@@ -5,7 +5,7 @@ export class CreateCompanyDto {
   @ApiProperty({ example: 'TopParts Manufacturing' })
   @IsString()
   @MaxLength(150)
-  name: string;
+  name!: string;
 
   @ApiPropertyOptional({ example: '123-45-67890' })
   @IsOptional()

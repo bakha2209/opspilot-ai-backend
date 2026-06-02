@@ -5,12 +5,12 @@ export class CreateWarehouseDto {
   @ApiProperty({ example: 'Main Warehouse' })
   @IsString()
   @MaxLength(150)
-  name: string;
+  name!: string;
 
   @ApiProperty({ example: 'WH-MAIN' })
   @IsString()
   @MaxLength(50)
-  code: string;
+  code!: string;
 
   @ApiPropertyOptional({ example: 'Cheongju, South Korea' })
   @IsOptional()

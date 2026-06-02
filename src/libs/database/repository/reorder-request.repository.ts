@@ -50,4 +50,29 @@ export class ReorderRequestRepository extends OrmRepository<ReorderRequestEntity
       },
     });
   }
+
+  async countPendingByCompanyId(companyId: string): Promise<number> {
+    return this.count({
+      where: {
+        companyId,
+        status: ReorderRequestStatus.PENDING,
+      },
+    });
+  }
+
+  async findPendingByCompanyId(companyId: string) {
+    return this.findItemMany({
+      where: {
+        companyId,
+        status: ReorderRequestStatus.PENDING,
+      },
+      relations: {
+        warehouse: true,
+        product: true,
+        requestedByUser: true,
+        approvedByUser: true,
+      },
+      order: { createdAt: 'DESC' },
+    });
+  }
 }

@@ -10,20 +10,20 @@ export enum ProductStatus {
 @Entity('products')
 export class ProductEntity extends BaseEntity {
   @Column({ name: 'company_id', type: 'uuid' })
-  companyId: string;
+  companyId!: string;
 
   @ManyToOne(() => CompanyEntity, {
     nullable: false,
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'company_id' })
-  company: CompanyEntity;
+  company!: CompanyEntity;
 
   @Column({ name: 'name', type: 'varchar', length: 200 })
-  name: string;
+  name!: string;
 
   @Column({ name: 'sku', type: 'varchar', length: 100 })
-  sku: string;
+  sku!: string;
 
   @Column({
     name: 'description',
@@ -46,14 +46,14 @@ export class ProductEntity extends BaseEntity {
     length: 30,
     default: 'EA',
   })
-  unit: string;
+  unit!: string;
 
   @Column({
     name: 'safety_stock',
     type: 'integer',
     default: 0,
   })
-  safetyStock: number;
+  safetyStock!: number;
 
   @Column({
     name: 'status',
@@ -61,5 +61,5 @@ export class ProductEntity extends BaseEntity {
     enum: ProductStatus,
     default: ProductStatus.ACTIVE,
   })
-  status: ProductStatus;
+  status!: ProductStatus;
 }

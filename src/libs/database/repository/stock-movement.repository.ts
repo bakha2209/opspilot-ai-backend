@@ -35,4 +35,20 @@ export class StockMovementRepository extends OrmRepository<StockMovementEntity> 
       order: { createdAt: 'DESC' },
     });
   }
+
+  async findRecentByCompanyId(
+    companyId: string,
+    limit = 10,
+  ): Promise<StockMovementEntity[]> {
+    return this.findItemMany({
+      where: { companyId },
+      relations: {
+        warehouse: true,
+        product: true,
+        user: true,
+      },
+      order: { createdAt: 'DESC' },
+      take: limit,
+    });
+  }
 }

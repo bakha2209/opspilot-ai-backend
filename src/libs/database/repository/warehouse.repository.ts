@@ -33,4 +33,10 @@ export class WarehouseRepository extends OrmRepository<WarehouseEntity> {
       where: { code, companyId },
     });
   }
+
+  async countByCompanyId(companyId: string): Promise<number> {
+    return this.count({
+      where: { companyId },
+    });
+  }
 }

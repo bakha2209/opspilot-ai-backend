@@ -31,7 +31,7 @@ export class RealtimeGateway
   private readonly logger = new Logger(RealtimeGateway.name);
 
   @WebSocketServer()
-  server: Server;
+  server!: Server;
 
   constructor(
     private readonly configService: ConfigService,

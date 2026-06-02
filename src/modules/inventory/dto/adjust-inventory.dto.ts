@@ -11,16 +11,16 @@ import {
 export class AdjustInventoryDto {
   @ApiProperty({ example: 'warehouse-uuid' })
   @IsUUID()
-  warehouseId: string;
+  warehouseId!: string;
 
   @ApiProperty({ example: 'product-uuid' })
   @IsUUID()
-  productId: string;
+  productId!: string;
 
   @ApiProperty({ example: 50 })
   @IsInt()
   @Min(0)
-  quantity: number;
+  quantity!: number;
 
   @ApiPropertyOptional({ example: 'Manual inventory correction' })
   @IsOptional()

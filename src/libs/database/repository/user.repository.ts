@@ -39,4 +39,11 @@ export class UserRepository extends OrmRepository<UserEntity> {
       relations: { company: true },
     });
   }
+
+  async findByEmailWithPassword(email: string) {
+    return this.createQueryBuilder('user')
+      .addSelect('user.password')
+      .where('user.email = :email', { email })
+      .getOne();
+  }
 }

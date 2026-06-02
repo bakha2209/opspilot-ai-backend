@@ -8,5 +8,5 @@ export class UpdateUserRoleDto {
     example: UserRole.OPERATIONS_MANAGER,
   })
   @IsEnum(UserRole)
-  role: UserRole;
+  role!: UserRole;
 }

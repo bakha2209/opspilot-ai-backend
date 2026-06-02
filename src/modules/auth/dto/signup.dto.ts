@@ -11,7 +11,7 @@ export class SignupDto {
   @ApiProperty({ example: 'TopParts Manufacturing' })
   @IsString()
   @MaxLength(150)
-  companyName: string;
+  companyName!: string;
 
   @ApiPropertyOptional({ example: '123-45-67890' })
   @IsOptional()
@@ -22,16 +22,16 @@ export class SignupDto {
   @ApiProperty({ example: 'admin@topparts.com' })
   @IsEmail()
   @MaxLength(150)
-  email: string;
+  email!: string;
 
   @ApiProperty({ example: 'Bakhodir Admin' })
   @IsString()
   @MaxLength(100)
-  name: string;
+  name!: string;
 
   @ApiProperty({ example: 'Password123!' })
   @IsString()
   @MinLength(8)
   @MaxLength(50)
-  password: string;
+  password!: string;
 }

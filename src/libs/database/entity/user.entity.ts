@@ -14,14 +14,14 @@ export enum UserStatus {
 @Entity('users')
 export class UserEntity extends BaseEntity {
   @Column({ name: 'email', type: 'varchar', length: 150, unique: true })
-  email: string;
+  email!: string;
 
   @Exclude()
-  @Column({ name: 'password', type: 'varchar', length: 255 })
-  password: string;
+  @Column({ name: 'password', type: 'varchar', length: 255, select: false })
+  password!: string;
 
   @Column({ name: 'name', type: 'varchar', length: 100 })
-  name: string;
+  name!: string;
 
   @Column({
     name: 'role',
@@ -29,7 +29,7 @@ export class UserEntity extends BaseEntity {
     enum: UserRole,
     default: UserRole.WAREHOUSE_STAFF,
   })
-  role: UserRole;
+  role!: UserRole;
 
   @Column({
     name: 'status',
@@ -37,7 +37,7 @@ export class UserEntity extends BaseEntity {
     enum: UserStatus,
     default: UserStatus.ACTIVE,
   })
-  status: UserStatus;
+  status!: UserStatus;
 
   @Column({ name: 'company_id', type: 'uuid', nullable: true })
   companyId?: string | null;

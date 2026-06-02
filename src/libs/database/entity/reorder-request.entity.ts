@@ -15,34 +15,34 @@ export enum ReorderRequestStatus {
 @Entity('reorder_requests')
 export class ReorderRequestEntity extends BaseEntity {
   @Column({ name: 'company_id', type: 'uuid' })
-  companyId: string;
+  companyId!: string;
 
   @ManyToOne(() => CompanyEntity, {
     nullable: false,
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'company_id' })
-  company: CompanyEntity;
+  company!: CompanyEntity;
 
   @Column({ name: 'warehouse_id', type: 'uuid' })
-  warehouseId: string;
+  warehouseId!: string;
 
   @ManyToOne(() => WarehouseEntity, {
     nullable: false,
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'warehouse_id' })
-  warehouse: WarehouseEntity;
+  warehouse!: WarehouseEntity;
 
   @Column({ name: 'product_id', type: 'uuid' })
-  productId: string;
+  productId!: string;
 
   @ManyToOne(() => ProductEntity, {
     nullable: false,
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'product_id' })
-  product: ProductEntity;
+  product!: ProductEntity;
 
   @Column({
     name: 'requested_by_user_id',
@@ -73,13 +73,13 @@ export class ReorderRequestEntity extends BaseEntity {
   approvedByUser?: UserEntity | null;
 
   @Column({ name: 'current_quantity', type: 'integer' })
-  currentQuantity: number;
+  currentQuantity!: number;
 
   @Column({ name: 'safety_stock', type: 'integer' })
-  safetyStock: number;
+  safetyStock!: number;
 
   @Column({ name: 'recommended_quantity', type: 'integer' })
-  recommendedQuantity: number;
+  recommendedQuantity!: number;
 
   @Column({
     name: 'ai_reason',
@@ -94,7 +94,7 @@ export class ReorderRequestEntity extends BaseEntity {
     enum: ReorderRequestStatus,
     default: ReorderRequestStatus.PENDING,
   })
-  status: ReorderRequestStatus;
+  status!: ReorderRequestStatus;
 
   @Column({
     name: 'memo',

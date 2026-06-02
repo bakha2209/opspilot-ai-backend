@@ -13,11 +13,11 @@ export enum NotificationType {
 @Entity('notifications')
 export class NotificationEntity extends BaseEntity {
   @Column({ name: 'company_id', type: 'uuid' })
-  companyId: string;
+  companyId!: string;
 
   @ManyToOne(() => CompanyEntity, { nullable: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'company_id' })
-  company: CompanyEntity;
+  company!: CompanyEntity;
 
   @Column({ name: 'user_id', type: 'uuid', nullable: true })
   userId?: string | null;
@@ -31,16 +31,16 @@ export class NotificationEntity extends BaseEntity {
     type: 'enum',
     enum: NotificationType,
   })
-  type: NotificationType;
+  type!: NotificationType;
 
   @Column({ name: 'title', type: 'varchar', length: 200 })
-  title: string;
+  title!: string;
 
   @Column({ name: 'message', type: 'text' })
-  message: string;
+  message!: string;
 
   @Column({ name: 'is_read', type: 'boolean', default: false })
-  isRead: boolean;
+  isRead!: boolean;
 
   @Column({ name: 'metadata', type: 'jsonb', nullable: true })
   metadata?: Record<string, any> | null;

@@ -37,4 +37,22 @@ export class InventoryRepository extends OrmRepository<InventoryEntity> {
       relations: { warehouse: true, product: true },
     });
   }
+
+  async countByCompanyId(companyId: string): Promise<number> {
+    return this.count({
+      where: { companyId },
+    });
+  }
+
+  async findLowStockByCompanyId(companyId: string): Promise<InventoryEntity[]> {
+    const items = await this.findItemMany({
+      where: { companyId },
+      relations: { warehouse: true, product: true },
+      order: { updatedAt: 'DESC' },
+    });
+
+    return items.filter(
+      (item) => item.product && item.quantity <= item.product.safetyStock,
+    );
+  }
 }

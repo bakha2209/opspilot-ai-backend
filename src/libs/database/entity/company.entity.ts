@@ -11,7 +11,7 @@ export enum CompanyStatus {
 @Entity('companies')
 export class CompanyEntity extends BaseEntity {
   @Column({ name: 'name', type: 'varchar', length: 150 })
-  name: string;
+  name!: string;
 
   @Column({
     name: 'business_number',
@@ -33,8 +33,8 @@ export class CompanyEntity extends BaseEntity {
     enum: CompanyStatus,
     default: CompanyStatus.ACTIVE,
   })
-  status: CompanyStatus;
+  status!: CompanyStatus;
 
   @OneToMany(() => UserEntity, (user) => user.company)
-  users: UserEntity[];
+  users!: UserEntity[];
 }
