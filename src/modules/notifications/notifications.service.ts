@@ -12,6 +12,7 @@ import { NotificationRepository } from '../../libs/database/repository';
 import { AuthPayload } from '../auth/types/auth-payload.type';
 import { apiSuccess } from '../../common/utils/api-response.utils';
 import { RealtimeGateway } from '../realtime/realtime/realtime.gateway';
+import { JobsService } from '../jobs/jobs.service';
 
 type CreateNotificationInput = {
   companyId: string;
@@ -27,6 +28,7 @@ export class NotificationsService {
   constructor(
     private readonly notificationRepository: NotificationRepository,
     private readonly realtimeGateway: RealtimeGateway,
+    private readonly jobsService: JobsService,
   ) {}
 
   async createSystemNotification(input: CreateNotificationInput) {
@@ -48,6 +50,15 @@ export class NotificationsService {
       metadata: notification.metadata,
       isRead: notification.isRead,
       createdAt: notification.createdAt,
+    });
+
+    await this.jobsService.addNotificationCreatedJob({
+      notificationId: notification.id,
+      companyId: notification.companyId,
+      type: notification.type,
+      title: notification.title,
+      message: notification.message,
+      metadata: notification.metadata,
     });
 
     return notification;

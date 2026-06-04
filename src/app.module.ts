@@ -22,6 +22,7 @@ import { AuditLogsModule } from './modules/audit-logs/audit-logs.module';
 import { CacheModule } from './modules/cache/cache.module';
 import { FilesModule } from './modules/files/files.module';
 import { UploadedFileEntity } from './libs/database/entity/uploaded-file.entity';
+import { JobsModule } from './modules/jobs/jobs.module';
 
 @Module({
   imports: [
@@ -76,6 +77,7 @@ import { UploadedFileEntity } from './libs/database/entity/uploaded-file.entity'
     AuditLogsModule,
     CacheModule,
     FilesModule,
+    JobsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

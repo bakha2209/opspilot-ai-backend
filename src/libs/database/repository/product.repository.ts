@@ -13,6 +13,9 @@ export class ProductRepository extends OrmRepository<ProductEntity> {
   async findByCompanyId(companyId: string): Promise<ProductEntity[]> {
     return this.findItemMany({
       where: { companyId },
+      relations: {
+        mainImage: true,
+      },
       order: { createdAt: 'DESC' },
     });
   }
@@ -23,6 +26,7 @@ export class ProductRepository extends OrmRepository<ProductEntity> {
   ): Promise<ProductEntity | null> {
     return this.findItemOne({
       where: { id, companyId },
+      relations: { mainImage: true },
     });
   }
 
@@ -32,6 +36,7 @@ export class ProductRepository extends OrmRepository<ProductEntity> {
   ): Promise<ProductEntity | null> {
     return this.findItemOne({
       where: { sku, companyId },
+      relations: { mainImage: true },
     });
   }
 
@@ -59,6 +64,9 @@ export class ProductRepository extends OrmRepository<ProductEntity> {
 
     const [items, totalItems] = await this.findAndCount({
       where,
+      relations: {
+        mainImage: true,
+      },
       order: { createdAt: 'DESC' },
       skip: (page - 1) * limit,
       take: limit,

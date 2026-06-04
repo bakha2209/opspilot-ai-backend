@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { UserRole } from '../../common/enums/user-role.enum';
 import { ProductEntity } from '../../libs/database/entity';
-import { ProductRepository } from '../../libs/database/repository';
+import { ProductRepository, UploadedFileRepository } from '../../libs/database/repository';
 import { AuthPayload } from '../auth/types/auth-payload.type';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -23,11 +23,26 @@ export class ProductsService {
     private readonly productRepository: ProductRepository,
     private readonly auditLogsService: AuditLogsService,
     private readonly cacheService: CacheService,
+    private readonly uploadedFileRepository: UploadedFileRepository,
   ) {}
 
   async create(currentUser: AuthPayload, dto: CreateProductDto) {
     const companyId = this.getCompanyIdOrThrow(currentUser);
+     if (dto.mainImageId) {
+       const file = await this.uploadedFileRepository.findItemOne({
+         where: {
+           id: dto.mainImageId,
+           companyId,
+         },
+       });
 
+       if (!file) {
+         throw new NotFoundException(
+           'Product image file not found in your company',
+         );
+       }
+     }
+     
     const existing = await this.productRepository.findBySkuAndCompanyId(
       dto.sku,
       companyId,

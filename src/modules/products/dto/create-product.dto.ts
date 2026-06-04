@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsInt, IsOptional, IsString, MaxLength, Min } from 'class-validator';
+import { IsInt, IsOptional, IsString, IsUUID, MaxLength, Min } from 'class-validator';
 
 export class CreateProductDto {
   @ApiProperty({ example: 'Industrial Motor A' })
@@ -42,4 +42,9 @@ export class CreateProductDto {
   @IsInt()
   @Min(0)
   safetyStock?: number;
+
+  @ApiPropertyOptional({ example: 'uploaded-file-uuid' })
+  @IsOptional()
+  @IsUUID()
+  mainImageId?: string;
 }

@@ -1,6 +1,7 @@
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { CompanyEntity } from './company.entity';
+import { UploadedFileEntity } from './uploaded-file.entity';
 
 export enum ProductStatus {
   ACTIVE = 'ACTIVE',
@@ -62,4 +63,18 @@ export class ProductEntity extends BaseEntity {
     default: ProductStatus.ACTIVE,
   })
   status!: ProductStatus;
+
+  @Column({
+    name: 'main_image_id',
+    type: 'uuid',
+    nullable: true,
+  })
+  mainImageId?: string | null;
+
+  @ManyToOne(() => UploadedFileEntity, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'main_image_id' })
+  mainImage?: UploadedFileEntity | null;
 }
