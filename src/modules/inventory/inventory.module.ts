@@ -7,6 +7,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
 import { EventsModule } from '../events/events.module';
 import { ReorderRequestsModule } from '../reorder-requests/reorder-requests.module';
 import { AuditLogsModule } from '../audit-logs/audit-logs.module';
+import { CacheModule } from '../cache/cache.module';
 
 @Module({
   imports: [
@@ -15,7 +16,8 @@ import { AuditLogsModule } from '../audit-logs/audit-logs.module';
     NotificationsModule,
     EventsModule,
     ReorderRequestsModule,
-    AuditLogsModule
+    AuditLogsModule,
+    CacheModule,
   ],
   controllers: [InventoryController],
   providers: [InventoryService],

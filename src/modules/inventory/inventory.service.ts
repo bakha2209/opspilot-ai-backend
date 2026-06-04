@@ -28,6 +28,7 @@ import { EventName } from '../events/constants/event-name.constant';
 import { ReorderRequestsService } from '../reorder-requests/reorder-requests.service';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
 import { AuditAction } from '../audit-logs/constants/audit-aution.constant';
+import { CacheService } from '../cache/cache.service';
 
 @Injectable()
 export class InventoryService {
@@ -41,6 +42,7 @@ export class InventoryService {
     private readonly eventsService: EventsService,
     private readonly reorderRequestsService: ReorderRequestsService,
     private readonly auditLogsService: AuditLogsService,
+    private readonly cacheService: CacheService,
   ) {}
 
   async findAll(currentUser: AuthPayload) {
@@ -234,6 +236,8 @@ export class InventoryService {
         savedInventory.quantity,
       );
 
+      await this.cacheService.delByPattern(`dashboard:*:${companyId}`);
+
       return apiSuccess('Inventory adjusted successfully', savedInventory);
     });
   }
@@ -353,6 +357,8 @@ export class InventoryService {
         savedInventory.productId,
         savedInventory.quantity,
       );
+
+      await this.cacheService.delByPattern(`dashboard:*:${companyId}`);
 
       return apiSuccess('Stock movement applied successfully', savedInventory);
     });

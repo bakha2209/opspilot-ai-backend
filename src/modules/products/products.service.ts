@@ -15,12 +15,14 @@ import { PaginationQueryDto } from '../../common/dto/pagination/pagination-query
 import { buildPaginationMeta } from '../../common/utils/pagination.util';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
 import { AuditAction } from '../audit-logs/constants/audit-aution.constant';
+import { CacheService } from '../cache/cache.service';
 
 @Injectable()
 export class ProductsService {
   constructor(
     private readonly productRepository: ProductRepository,
     private readonly auditLogsService: AuditLogsService,
+    private readonly cacheService: CacheService,
   ) {}
 
   async create(currentUser: AuthPayload, dto: CreateProductDto) {
@@ -40,15 +42,17 @@ export class ProductsService {
       companyId,
     } as Partial<ProductEntity>);
 
-   await this.auditLogsService.create({
-     companyId,
-     userId: currentUser.sub,
-     action: AuditAction.PRODUCT_CREATED,
-     resourceType: 'Product',
-     resourceId: product.id,
-     beforeData: null,
-     afterData: product,
-   });
+    await this.auditLogsService.create({
+      companyId,
+      userId: currentUser.sub,
+      action: AuditAction.PRODUCT_CREATED,
+      resourceType: 'Product',
+      resourceId: product.id,
+      beforeData: null,
+      afterData: product,
+    });
+
+    await this.cacheService.delByPattern(`dashboard:*:${companyId}`);
 
     return apiSuccess('Product created successfully', product);
   }
@@ -148,7 +152,7 @@ export class ProductsService {
       beforeData,
       afterData: saved,
     });
-
+    await this.cacheService.delByPattern(`dashboard:*:${companyId}`);
     return apiSuccess('Product updated successfully', saved);
   }
 
@@ -173,6 +177,7 @@ export class ProductsService {
       afterData: null,
     });
     await this.productRepository.softDeleteItem(product);
+    await this.cacheService.delByPattern(`dashboard:*:${companyId}`);
 
     return apiSuccess('Product deleted successfully', { id });
   }
