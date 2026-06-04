@@ -8,3 +8,4 @@ export * from './stock-movement.entity';
 export * from './notification.entity';
 export * from './reorder-request.entity';
 export * from './audit-log.entity';
+export * from './uploaded-file.entity';

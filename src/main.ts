@@ -5,9 +5,11 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'node:path';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   const configService = app.get(ConfigService);
 
@@ -43,6 +45,9 @@ app.useGlobalFilters(new HttpExceptionFilter());
   SwaggerModule.setup('docs', app, document);
 
   const port = configService.get<number>('PORT') || 4000;
+  app.useStaticAssets(join(process.cwd(), 'uploads'), {
+    prefix: '/uploads/',
+  });
   await app.listen(port);
 
   console.log(`OpsPilot AI backend running on http://localhost:${port}`);

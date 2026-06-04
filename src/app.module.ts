@@ -20,6 +20,8 @@ import { AiCopilotModule } from './modules/ai-copilot/ai-copilot.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { AuditLogsModule } from './modules/audit-logs/audit-logs.module';
 import { CacheModule } from './modules/cache/cache.module';
+import { FilesModule } from './modules/files/files.module';
+import { UploadedFileEntity } from './libs/database/entity/uploaded-file.entity';
 
 @Module({
   imports: [
@@ -49,7 +51,8 @@ import { CacheModule } from './modules/cache/cache.module';
             StockMovementEntity,
             NotificationEntity,
             ReorderRequestEntity,
-            AuditLogEntity
+            AuditLogEntity,
+            UploadedFileEntity,
           ],
           synchronize,
         };
@@ -72,6 +75,7 @@ import { CacheModule } from './modules/cache/cache.module';
     DashboardModule,
     AuditLogsModule,
     CacheModule,
+    FilesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

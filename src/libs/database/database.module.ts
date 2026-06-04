@@ -7,6 +7,7 @@ import {
   ProductRepository,
   ReorderRequestRepository,
   StockMovementRepository,
+  UploadedFileRepository,
   UserRepository,
   WarehouseRepository,
 } from './repository';
@@ -29,6 +30,7 @@ import { DatabaseSeederService, DemoDataSeeder, SuperAdminSeeder } from './seede
     DemoDataSeeder,
     SuperAdminSeeder,
     AuditLogRepository,
+    UploadedFileRepository,
   ],
   exports: [
     CompanyRepository,
@@ -40,6 +42,7 @@ import { DatabaseSeederService, DemoDataSeeder, SuperAdminSeeder } from './seede
     NotificationRepository,
     ReorderRequestRepository,
     AuditLogRepository,
+    UploadedFileRepository,
   ],
 })
 export class DatabaseModule {}
