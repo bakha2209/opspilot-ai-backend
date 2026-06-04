@@ -9,6 +9,7 @@ import {
 } from '../../libs/database/repository';
 import { AuthPayload } from '../auth/types/auth-payload.type';
 import { apiSuccess } from '../../common/utils/api-response.utils';
+import { CacheService } from '../cache/cache.service';
 
 @Injectable()
 export class DashboardService {
@@ -19,10 +20,18 @@ export class DashboardService {
     private readonly notificationRepository: NotificationRepository,
     private readonly reorderRequestRepository: ReorderRequestRepository,
     private readonly stockMovementRepository: StockMovementRepository,
+    private readonly cacheService: CacheService,
   ) {}
 
   async summary(currentUser: AuthPayload) {
     const companyId = this.getCompanyIdOrThrow(currentUser);
+    const cacheKey = `dashboard:summary:${companyId}`;
+
+    const cached = await this.cacheService.get(cacheKey);
+
+    if (cached) {
+      return apiSuccess('Dashboard summary retrieved successfully', cached);
+    }
 
     const [
       totalWarehouses,
@@ -40,14 +49,18 @@ export class DashboardService {
       this.notificationRepository.countUnreadByCompanyId(companyId),
     ]);
 
-    return apiSuccess('Dashboard summary retrieved successfully', {
+    const result = {
       totalWarehouses,
       totalProducts,
       totalInventoryItems,
       lowStockCount: lowStockItems.length,
       pendingReorderCount,
       unreadNotificationCount,
-    });
+    };
+
+    await this.cacheService.set(cacheKey, result, 60);
+
+    return apiSuccess('Dashboard summary retrieved successfully', result);
   }
 
   async lowStock(currentUser: AuthPayload) {

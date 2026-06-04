@@ -19,6 +19,7 @@ import { ReorderRequestsModule } from './modules/reorder-requests/reorder-reques
 import { AiCopilotModule } from './modules/ai-copilot/ai-copilot.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { AuditLogsModule } from './modules/audit-logs/audit-logs.module';
+import { CacheModule } from './modules/cache/cache.module';
 
 @Module({
   imports: [
@@ -70,6 +71,7 @@ import { AuditLogsModule } from './modules/audit-logs/audit-logs.module';
     AiCopilotModule,
     DashboardModule,
     AuditLogsModule,
+    CacheModule,
   ],
   controllers: [AppController],
   providers: [AppService],
