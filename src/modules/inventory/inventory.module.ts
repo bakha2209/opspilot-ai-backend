@@ -6,6 +6,7 @@ import { SecurityModule } from '../../libs/core/security';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { EventsModule } from '../events/events.module';
 import { ReorderRequestsModule } from '../reorder-requests/reorder-requests.module';
+import { AuditLogsModule } from '../audit-logs/audit-logs.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { ReorderRequestsModule } from '../reorder-requests/reorder-requests.modu
     NotificationsModule,
     EventsModule,
     ReorderRequestsModule,
+    AuditLogsModule
   ],
   controllers: [InventoryController],
   providers: [InventoryService],

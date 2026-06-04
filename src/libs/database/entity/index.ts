@@ -7,3 +7,4 @@ export * from './inventory.entity';
 export * from './stock-movement.entity';
 export * from './notification.entity';
 export * from './reorder-request.entity';
+export * from './audit-log.entity';

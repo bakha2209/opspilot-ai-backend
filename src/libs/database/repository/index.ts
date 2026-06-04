@@ -6,3 +6,4 @@ export * from './inventory.repository';
 export * from './stock-movement.repository';
 export * from './notification.repository';
 export * from './reorder-request.repository';
+export * from './audit-log.repository';

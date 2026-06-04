@@ -5,7 +5,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CompaniesModule } from './modules/companies/companies.module';
 import { UsersModule } from './modules/users/users.module';
-import { CompanyEntity, InventoryEntity, NotificationEntity, ProductEntity, ReorderRequestEntity, StockMovementEntity, UserEntity, WarehouseEntity } from './libs/database/entity';
+import { AuditLogEntity, CompanyEntity, InventoryEntity, NotificationEntity, ProductEntity, ReorderRequestEntity, StockMovementEntity, UserEntity, WarehouseEntity } from './libs/database/entity';
 import { DatabaseModule } from './libs/database/database.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { WarehousesModule } from './modules/warehouses/warehouses.module';
@@ -18,6 +18,7 @@ import { EventsModule } from './modules/events/events.module';
 import { ReorderRequestsModule } from './modules/reorder-requests/reorder-requests.module';
 import { AiCopilotModule } from './modules/ai-copilot/ai-copilot.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { AuditLogsModule } from './modules/audit-logs/audit-logs.module';
 
 @Module({
   imports: [
@@ -46,7 +47,8 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
             InventoryEntity,
             StockMovementEntity,
             NotificationEntity,
-            ReorderRequestEntity
+            ReorderRequestEntity,
+            AuditLogEntity
           ],
           synchronize,
         };
@@ -67,6 +69,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
     ReorderRequestsModule,
     AiCopilotModule,
     DashboardModule,
+    AuditLogsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

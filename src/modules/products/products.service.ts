@@ -13,10 +13,15 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { apiSuccess } from '../../common/utils/api-response.utils';
 import { PaginationQueryDto } from '../../common/dto/pagination/pagination-query.dto';
 import { buildPaginationMeta } from '../../common/utils/pagination.util';
+import { AuditLogsService } from '../audit-logs/audit-logs.service';
+import { AuditAction } from '../audit-logs/constants/audit-aution.constant';
 
 @Injectable()
 export class ProductsService {
-  constructor(private readonly productRepository: ProductRepository) {}
+  constructor(
+    private readonly productRepository: ProductRepository,
+    private readonly auditLogsService: AuditLogsService,
+  ) {}
 
   async create(currentUser: AuthPayload, dto: CreateProductDto) {
     const companyId = this.getCompanyIdOrThrow(currentUser);
@@ -35,6 +40,16 @@ export class ProductsService {
       companyId,
     } as Partial<ProductEntity>);
 
+   await this.auditLogsService.create({
+     companyId,
+     userId: currentUser.sub,
+     action: AuditAction.PRODUCT_CREATED,
+     resourceType: 'Product',
+     resourceId: product.id,
+     beforeData: null,
+     afterData: product,
+   });
+
     return apiSuccess('Product created successfully', product);
   }
 
@@ -43,11 +58,11 @@ export class ProductsService {
     const limit = query.limit ?? 20;
 
     if (currentUser.role === UserRole.SUPER_ADMIN) {
-      const [items, totalItems] = await this.productRepository.findAndCount({
-        order: { createdAt: 'DESC' },
-        skip: (page - 1) * limit,
-        take: limit,
-      });
+      const { items, totalItems } =
+        await this.productRepository.findPaginatedAll({
+          page,
+          limit,
+        });
 
       return apiSuccess('Products retrieved successfully', {
         items,
@@ -120,10 +135,19 @@ export class ProductsService {
         throw new ConflictException('SKU already exists in this company');
       }
     }
-
+    const beforeData = { ...product };
     Object.assign(product, dto);
 
     const saved = await this.productRepository.saveItem(product);
+    await this.auditLogsService.create({
+      companyId,
+      userId: currentUser.sub,
+      action: AuditAction.PRODUCT_UPDATED,
+      resourceType: 'Product',
+      resourceId: saved.id,
+      beforeData,
+      afterData: saved,
+    });
 
     return apiSuccess('Product updated successfully', saved);
   }
@@ -139,7 +163,15 @@ export class ProductsService {
     if (!product) {
       throw new NotFoundException('Product not found in your company');
     }
-
+    await this.auditLogsService.create({
+      companyId,
+      userId: currentUser.sub,
+      action: AuditAction.PRODUCT_DELETED,
+      resourceType: 'Product',
+      resourceId: product.id,
+      beforeData: product,
+      afterData: null,
+    });
     await this.productRepository.softDeleteItem(product);
 
     return apiSuccess('Product deleted successfully', { id });

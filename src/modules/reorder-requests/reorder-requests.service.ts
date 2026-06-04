@@ -20,6 +20,8 @@ import {
 import { AuthPayload } from '../auth/types/auth-payload.type';
 import { NotificationsService } from '../notifications/notifications.service';
 import { apiSuccess } from '../../common/utils/api-response.utils';
+import { AuditLogsService } from '../audit-logs/audit-logs.service';
+import { AuditAction } from '../audit-logs/constants/audit-aution.constant';
 
 @Injectable()
 export class ReorderRequestsService {
@@ -29,6 +31,7 @@ export class ReorderRequestsService {
     private readonly productRepository: ProductRepository,
     private readonly notificationsService: NotificationsService,
     private readonly eventsService: EventsService,
+    private readonly auditLogsService: AuditLogsService,
   ) {}
 
   async createAutomaticLowStockRequest(input: {
@@ -74,6 +77,25 @@ export class ReorderRequestsService {
       aiReason,
       status: ReorderRequestStatus.PENDING,
     } as Partial<ReorderRequestEntity>);
+
+    await this.auditLogsService.create({
+      companyId: input.companyId,
+
+      action: 'REORDER_CREATED',
+
+      resourceType: 'ReorderRequest',
+      resourceId: reorder.id,
+
+      beforeData: null,
+
+      afterData: {
+        productId: input.productId,
+        warehouseId: input.warehouseId,
+        currentQuantity: input.currentQuantity,
+        safetyStock: input.safetyStock,
+        recommendedQuantity,
+      },
+    });
 
     await this.notificationsService.createSystemNotification({
       companyId: input.companyId,
@@ -131,10 +153,28 @@ export class ReorderRequestsService {
       );
     }
 
+    const beforeData = {
+      status: item.status,
+    };
     item.status = ReorderRequestStatus.APPROVED;
     item.approvedByUserId = currentUser.sub;
 
     const saved = await this.reorderRequestRepository.saveItem(item);
+    await this.auditLogsService.create({
+      companyId,
+      userId: currentUser.sub,
+
+      action: AuditAction.REORDER_APPROVED,
+
+      resourceType: 'ReorderRequest',
+      resourceId: item.id,
+
+      beforeData,
+
+      afterData: {
+        status: saved.status,
+      },
+    });
 
     return apiSuccess('Reorder request approved successfully', saved);
   }
@@ -156,11 +196,29 @@ export class ReorderRequestsService {
         'Only pending reorder requests can be rejected',
       );
     }
-
+    const beforeData = {
+      status: item.status,
+    };
     item.status = ReorderRequestStatus.REJECTED;
     item.approvedByUserId = currentUser.sub;
 
     const saved = await this.reorderRequestRepository.saveItem(item);
+
+    await this.auditLogsService.create({
+      companyId,
+      userId: currentUser.sub,
+
+      action: AuditAction.REORDER_REJECTED,
+
+      resourceType: 'ReorderRequest',
+      resourceId: item.id,
+
+      beforeData,
+
+      afterData: {
+        status: saved.status,
+      },
+    });
 
     return apiSuccess('Reorder request rejected successfully', saved);
   }

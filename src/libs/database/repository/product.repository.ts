@@ -66,4 +66,16 @@ export class ProductRepository extends OrmRepository<ProductEntity> {
 
     return { items, totalItems };
   }
+
+  async findPaginatedAll(params: { page: number; limit: number }) {
+    const { page, limit } = params;
+
+    const [items, totalItems] = await this.findAndCount({
+      order: { createdAt: 'DESC' },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+
+    return { items, totalItems };
+  }
 }

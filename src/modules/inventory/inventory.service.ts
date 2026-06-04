@@ -26,6 +26,8 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { EventsService } from '../events/events.service';
 import { EventName } from '../events/constants/event-name.constant';
 import { ReorderRequestsService } from '../reorder-requests/reorder-requests.service';
+import { AuditLogsService } from '../audit-logs/audit-logs.service';
+import { AuditAction } from '../audit-logs/constants/audit-aution.constant';
 
 @Injectable()
 export class InventoryService {
@@ -38,6 +40,7 @@ export class InventoryService {
     private readonly notificationsService: NotificationsService,
     private readonly eventsService: EventsService,
     private readonly reorderRequestsService: ReorderRequestsService,
+    private readonly auditLogsService: AuditLogsService,
   ) {}
 
   async findAll(currentUser: AuthPayload) {
@@ -95,13 +98,13 @@ export class InventoryService {
         metadata,
       });
 
-      await this.reorderRequestsService.createAutomaticLowStockRequest({
-        companyId,
-        warehouseId,
-        productId,
-        currentQuantity,
-        safetyStock: product.safetyStock,
-      });
+    await this.reorderRequestsService.createAutomaticLowStockRequest({
+      companyId,
+      warehouseId,
+      productId,
+      currentQuantity,
+      safetyStock: product.safetyStock,
+    });
 
     await this.eventsService.publish(
       EventName.LOW_STOCK_DETECTED,
@@ -184,6 +187,26 @@ export class InventoryService {
       const savedMovement = await manager
         .getRepository(StockMovementEntity)
         .save(movement);
+
+      await this.auditLogsService.create({
+        companyId,
+        userId: currentUser.sub,
+        action: AuditAction.INVENTORY_ADJUSTED,
+        resourceType: 'Inventory',
+        resourceId: savedInventory.id,
+        beforeData: {
+          quantity: beforeQuantity,
+        },
+        afterData: {
+          quantity: afterQuantity,
+          movementId: savedMovement.id,
+          movementType: StockMovementType.ADJUSTMENT,
+          warehouseId: dto.warehouseId,
+          productId: dto.productId,
+          reason: dto.reason ?? null,
+          memo: dto.memo ?? null,
+        },
+      });
 
       await this.eventsService.publish(
         EventName.STOCK_MOVEMENT_CREATED,
@@ -280,6 +303,30 @@ export class InventoryService {
       const savedMovement = await manager
         .getRepository(StockMovementEntity)
         .save(movement);
+
+      await this.auditLogsService.create({
+        companyId,
+        userId: currentUser.sub,
+        action:
+          type === StockMovementType.STOCK_IN
+            ? AuditAction.INVENTORY_STOCK_IN
+            : AuditAction.INVENTORY_STOCK_OUT,
+        resourceType: 'Inventory',
+        resourceId: savedInventory.id,
+        beforeData: {
+          quantity: beforeQuantity,
+        },
+        afterData: {
+          quantity: afterQuantity,
+          movementId: savedMovement.id,
+          movementType: type,
+          movedQuantity: dto.quantity,
+          warehouseId: dto.warehouseId,
+          productId: dto.productId,
+          reason: dto.reason ?? null,
+          memo: dto.memo ?? null,
+        },
+      });
 
       await this.eventsService.publish(
         EventName.STOCK_MOVEMENT_CREATED,
