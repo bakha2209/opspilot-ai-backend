@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { OrmRepository } from '../../core/typeorm/orm.repository';
 import { ProductEntity } from '../entity';
+import { ILike } from 'typeorm';
 
 @Injectable()
 export class ProductRepository extends OrmRepository<ProductEntity> {
@@ -38,5 +39,31 @@ export class ProductRepository extends OrmRepository<ProductEntity> {
     return this.count({
       where: { companyId },
     });
+  }
+
+  async findPaginatedByCompanyId(params: {
+    companyId: string;
+    page: number;
+    limit: number;
+    search?: string;
+  }) {
+    const { companyId, page, limit, search } = params;
+
+    const where = search
+      ? [
+          { companyId, name: ILike(`%${search}%`) },
+          { companyId, sku: ILike(`%${search}%`) },
+          { companyId, barcode: ILike(`%${search}%`) },
+        ]
+      : { companyId };
+
+    const [items, totalItems] = await this.findAndCount({
+      where,
+      order: { createdAt: 'DESC' },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+
+    return { items, totalItems };
   }
 }

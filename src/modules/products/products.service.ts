@@ -11,6 +11,8 @@ import { AuthPayload } from '../auth/types/auth-payload.type';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { apiSuccess } from '../../common/utils/api-response.utils';
+import { PaginationQueryDto } from '../../common/dto/pagination/pagination-query.dto';
+import { buildPaginationMeta } from '../../common/utils/pagination.util';
 
 @Injectable()
 export class ProductsService {
@@ -36,20 +38,37 @@ export class ProductsService {
     return apiSuccess('Product created successfully', product);
   }
 
-  async findAll(currentUser: AuthPayload) {
+  async findAll(currentUser: AuthPayload, query: PaginationQueryDto) {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 20;
+
     if (currentUser.role === UserRole.SUPER_ADMIN) {
-      const products = await this.productRepository.findItemMany({
+      const [items, totalItems] = await this.productRepository.findAndCount({
         order: { createdAt: 'DESC' },
+        skip: (page - 1) * limit,
+        take: limit,
       });
 
-      return apiSuccess('Products retrieved successfully', products);
+      return apiSuccess('Products retrieved successfully', {
+        items,
+        meta: buildPaginationMeta({ page, limit, totalItems }),
+      });
     }
 
     const companyId = this.getCompanyIdOrThrow(currentUser);
 
-    const products = await this.productRepository.findByCompanyId(companyId);
+    const { items, totalItems } =
+      await this.productRepository.findPaginatedByCompanyId({
+        companyId,
+        page,
+        limit,
+        search: query.search,
+      });
 
-    return apiSuccess('Products retrieved successfully', products);
+    return apiSuccess('Products retrieved successfully', {
+      items,
+      meta: buildPaginationMeta({ page, limit, totalItems }),
+    });
   }
 
   async findOne(currentUser: AuthPayload, id: string) {

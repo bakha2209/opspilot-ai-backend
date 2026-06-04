@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UserRole } from '../../common/enums/user-role.enum';
@@ -15,6 +16,7 @@ import type { AuthPayload } from '../auth/types/auth-payload.type';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ProductsService } from './products.service';
+import { PaginationQueryDto } from '../../common/dto/pagination/pagination-query.dto';
 
 @ApiTags('Products')
 @ApiBearerAuth()
@@ -40,8 +42,11 @@ export class ProductsController {
     UserRole.WAREHOUSE_STAFF,
   )
   @ApiOperation({ summary: 'Get products' })
-  findAll(@CurrentUser() currentUser: AuthPayload) {
-    return this.productsService.findAll(currentUser);
+  findAll(
+    @CurrentUser() currentUser: AuthPayload,
+    @Query() query: PaginationQueryDto,
+  ) {
+    return this.productsService.findAll(currentUser, query);
   }
 
   @Get(':id')
