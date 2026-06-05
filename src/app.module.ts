@@ -23,6 +23,7 @@ import { CacheModule } from './modules/cache/cache.module';
 import { FilesModule } from './modules/files/files.module';
 import { UploadedFileEntity } from './libs/database/entity/uploaded-file.entity';
 import { JobsModule } from './modules/jobs/jobs.module';
+import { TelegramModule } from './modules/telegram/telegram.module';
 
 @Module({
   imports: [
@@ -78,6 +79,7 @@ import { JobsModule } from './modules/jobs/jobs.module';
     CacheModule,
     FilesModule,
     JobsModule,
+    TelegramModule,
   ],
   controllers: [AppController],
   providers: [AppService],

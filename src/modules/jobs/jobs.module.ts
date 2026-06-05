@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { JobsService } from './jobs.service';
 import { QueueName } from './constants/queue.constant';
 import { NotificationProcessor } from './processors/notification.processor';
+import { TelegramModule } from '../telegram/telegram.module';
 
 
 @Module({
@@ -23,6 +24,7 @@ import { NotificationProcessor } from './processors/notification.processor';
     BullModule.registerQueue({
       name: QueueName.NOTIFICATION,
     }),
+    TelegramModule,
   ],
   providers: [JobsService, NotificationProcessor],
   exports: [JobsService],
