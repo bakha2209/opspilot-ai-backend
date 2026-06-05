@@ -9,3 +9,4 @@ export * from './notification.entity';
 export * from './reorder-request.entity';
 export * from './audit-log.entity';
 export * from './uploaded-file.entity';
+export * from './company-integration.entity';

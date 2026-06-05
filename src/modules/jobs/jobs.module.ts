@@ -5,6 +5,7 @@ import { JobsService } from './jobs.service';
 import { QueueName } from './constants/queue.constant';
 import { NotificationProcessor } from './processors/notification.processor';
 import { TelegramModule } from '../telegram/telegram.module';
+import { CompanyIntegrationsModule } from '../company-integrations/company-integrations.module';
 
 
 @Module({
@@ -25,6 +26,7 @@ import { TelegramModule } from '../telegram/telegram.module';
       name: QueueName.NOTIFICATION,
     }),
     TelegramModule,
+    CompanyIntegrationsModule,
   ],
   providers: [JobsService, NotificationProcessor],
   exports: [JobsService],

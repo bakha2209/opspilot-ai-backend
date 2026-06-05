@@ -4,12 +4,16 @@ import { Job } from 'bullmq';
 import { JobName, QueueName } from '../constants/queue.constant';
 import { NotificationCreatedJobPayload } from '../jobs.service';
 import { TelegramService } from '../../telegram/telegram.service';
+import { CompanyIntegrationsService } from '../../company-integrations/company-integrations.service';
 
 @Processor(QueueName.NOTIFICATION)
 export class NotificationProcessor extends WorkerHost {
   private readonly logger = new Logger(NotificationProcessor.name);
 
-  constructor(private readonly telegramService: TelegramService) {
+  constructor(
+    private readonly telegramService: TelegramService,
+    private readonly companyIntegrationsService: CompanyIntegrationsService,
+  ) {
     super();
   }
 
@@ -34,7 +38,18 @@ export class NotificationProcessor extends WorkerHost {
 
     const message = this.buildTelegramMessage(payload);
 
-    await this.telegramService.sendMessage(message);
+   const target = await this.companyIntegrationsService.getTelegramTarget(
+     payload.companyId,
+   );
+
+   if (!target.enabled || !target.chatId) {
+     this.logger.log(
+       `Company Telegram disabled or missing chatId. companyId=${payload.companyId}`,
+     );
+     return;
+   }
+
+   await this.telegramService.sendMessage(message, target.chatId);
   }
 
   private buildTelegramMessage(payload: NotificationCreatedJobPayload): string {

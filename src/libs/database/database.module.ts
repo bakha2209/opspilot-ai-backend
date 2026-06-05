@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import {
   AuditLogRepository,
+  CompanyIntegrationRepository,
   CompanyRepository,
   InventoryRepository,
   NotificationRepository,
@@ -12,12 +13,17 @@ import {
   WarehouseRepository,
 } from './repository';
 import { SecurityModule } from '../core/security';
-import { DatabaseSeederService, DemoDataSeeder, SuperAdminSeeder } from './seeder';
+import {
+  DatabaseSeederService,
+  DemoDataSeeder,
+  SuperAdminSeeder,
+} from './seeder';
 
 @Module({
   imports: [SecurityModule],
   providers: [
     CompanyRepository,
+    CompanyIntegrationRepository,
     UserRepository,
     ProductRepository,
     WarehouseRepository,
@@ -34,6 +40,7 @@ import { DatabaseSeederService, DemoDataSeeder, SuperAdminSeeder } from './seede
   ],
   exports: [
     CompanyRepository,
+    CompanyIntegrationRepository,
     UserRepository,
     WarehouseRepository,
     ProductRepository,

@@ -24,6 +24,8 @@ import { FilesModule } from './modules/files/files.module';
 import { UploadedFileEntity } from './libs/database/entity/uploaded-file.entity';
 import { JobsModule } from './modules/jobs/jobs.module';
 import { TelegramModule } from './modules/telegram/telegram.module';
+import { CompanyIntegrationEntity } from './libs/database/entity/company-integration.entity';
+import { CompanyIntegrationsModule } from './modules/company-integrations/company-integrations.module';
 
 @Module({
   imports: [
@@ -55,6 +57,7 @@ import { TelegramModule } from './modules/telegram/telegram.module';
             ReorderRequestEntity,
             AuditLogEntity,
             UploadedFileEntity,
+            CompanyIntegrationEntity,
           ],
           synchronize,
         };
@@ -80,6 +83,7 @@ import { TelegramModule } from './modules/telegram/telegram.module';
     FilesModule,
     JobsModule,
     TelegramModule,
+    CompanyIntegrationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
