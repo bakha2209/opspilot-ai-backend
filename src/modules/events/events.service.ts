@@ -82,30 +82,49 @@ export class EventsService implements OnApplicationBootstrap, OnModuleDestroy {
       return;
     }
 
-    try {
-      this.connection = await amqp.connect(url);
-      this.channel = await this.connection.createChannel();
+    const maxAttempts = 10;
+    const retryDelayMs = 3000;
 
-      await this.channel.assertExchange(this.exchangeName, 'topic', {
-        durable: true,
-      });
+    for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+      try {
+        this.connection = await amqp.connect(url);
+        this.channel = await this.connection.createChannel();
 
-      this.connection.on('error', (error) => {
-        this.logger.error(`RabbitMQ connection error: ${error.message}`);
-      });
+        await this.channel.assertExchange(this.exchangeName, 'topic', {
+          durable: true,
+        });
 
-      this.connection.on('close', () => {
-        this.logger.warn('RabbitMQ connection closed');
+        this.connection.on('error', (error) => {
+          this.logger.error(`RabbitMQ connection error: ${error.message}`);
+        });
+
+        this.connection.on('close', () => {
+          this.logger.warn('RabbitMQ connection closed');
+          this.connection = null;
+          this.channel = null;
+        });
+
+        this.logger.log(`RabbitMQ connected. Exchange=${this.exchangeName}`);
+        return;
+      } catch (error: any) {
         this.connection = null;
         this.channel = null;
-      });
 
-      this.logger.log(`RabbitMQ connected. Exchange=${this.exchangeName}`);
-    } catch (error: any) {
-      this.logger.error(`RabbitMQ connection failed: ${error.message}`);
-      this.connection = null;
-      this.channel = null;
+        if (attempt === maxAttempts) {
+          this.logger.error(`RabbitMQ connection failed: ${error.message}`);
+          return;
+        }
+
+        this.logger.warn(
+          `RabbitMQ connection attempt ${attempt} failed: ${error.message}. Retrying in ${retryDelayMs / 1000}s...`,
+        );
+        await this.delay(retryDelayMs);
+      }
     }
+  }
+
+  private async delay(ms: number) {
+    return new Promise<void>((resolve) => setTimeout(resolve, ms));
   }
 
   private async close() {

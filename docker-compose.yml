@@ -2,33 +2,70 @@ services:
   postgres:
     image: postgres:16
     container_name: opspilot-postgres
-    restart: always
-    ports:
-      - "5432:5432"
+    restart: unless-stopped
     environment:
       POSTGRES_DB: ${DB_DATABASE}
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5432:5432"
     volumes:
       - opspilot_pg_data:/var/lib/postgresql/data
+    networks:
+      - opspilot-network
 
   redis:
     image: redis:7
     container_name: opspilot-redis
-    restart: always
+    restart: unless-stopped
     ports:
       - "6379:6379"
+    networks:
+      - opspilot-network
 
   rabbitmq:
     image: rabbitmq:3-management
     container_name: opspilot-rabbitmq
-    restart: always
-    ports:
-      - "5672:5672"
-      - "15672:15672"
+    restart: unless-stopped
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - opspilot-network
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: opspilot-backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      DB_HOST: postgres
+      DB_PORT: ${DB_PORT}
+      DB_SYNCHRONIZE: ${DB_SYNCHRONIZE}
+      REDIS_HOST: redis
+      RABBITMQ_URL: amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbitmq:5672
+    ports:
+      - "4000:4000"
+    volumes:
+      - opspilot_uploads:/app/uploads
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+    networks:
+      - opspilot-network
 
 volumes:
   opspilot_pg_data:
+  opspilot_uploads:
+
+networks:
+  opspilot-network:
+    driver: bridge

@@ -37,50 +37,69 @@ export class EventsConsumer implements OnApplicationBootstrap, OnModuleDestroy {
       return;
     }
 
-    try {
-      this.connection = await amqp.connect(url);
-      this.channel = await this.connection.createChannel();
+    const maxAttempts = 10;
+    const retryDelayMs = 3000;
 
-      await this.channel.assertExchange(this.exchangeName, 'topic', {
-        durable: true,
-      });
+    for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+      try {
+        this.connection = await amqp.connect(url);
+        this.channel = await this.connection.createChannel();
 
-      await this.channel.assertQueue(this.queueName, {
-        durable: true,
-      });
+        await this.channel.assertExchange(this.exchangeName, 'topic', {
+          durable: true,
+        });
 
-      await this.channel.bindQueue(this.queueName, this.exchangeName, '#');
+        await this.channel.assertQueue(this.queueName, {
+          durable: true,
+        });
 
-      await this.channel.consume(
-        this.queueName,
-        (message) => {
-          if (!message) return;
+        await this.channel.bindQueue(this.queueName, this.exchangeName, '#');
 
-          try {
-            const content = JSON.parse(message.content.toString());
-            this.logger.log(
-              `Consumed event: ${content.eventName} eventId=${content.eventId}`,
-            );
+        await this.channel.consume(
+          this.queueName,
+          (message) => {
+            if (!message) return;
 
-            this.channel?.ack(message);
-          } catch (error: any) {
-            this.logger.error(`Failed to consume event: ${error.message}`);
-            this.channel?.nack(message, false, false);
-          }
-        },
-        {
-          noAck: false,
-        },
-      );
+            try {
+              const content = JSON.parse(message.content.toString());
+              this.logger.log(
+                `Consumed event: ${content.eventName} eventId=${content.eventId}`,
+              );
 
-      this.logger.log(`RabbitMQ consumer started. Queue=${this.queueName}`);
-    } catch (error: any) {
-      this.logger.error(
-        `RabbitMQ consumer connection failed: ${error.message}`,
-      );
-      this.connection = null;
-      this.channel = null;
+              this.channel?.ack(message);
+            } catch (error: any) {
+              this.logger.error(`Failed to consume event: ${error.message}`);
+              this.channel?.nack(message, false, false);
+            }
+          },
+          {
+            noAck: false,
+          },
+        );
+
+        this.logger.log(`RabbitMQ consumer started. Queue=${this.queueName}`);
+        return;
+      } catch (error: any) {
+        this.connection = null;
+        this.channel = null;
+
+        if (attempt === maxAttempts) {
+          this.logger.error(
+            `RabbitMQ consumer connection failed: ${error.message}`,
+          );
+          return;
+        }
+
+        this.logger.warn(
+          `RabbitMQ consumer attempt ${attempt} failed: ${error.message}. Retrying in ${retryDelayMs / 1000}s...`,
+        );
+        await this.delay(retryDelayMs);
+      }
     }
+  }
+
+  private async delay(ms: number) {
+    return new Promise<void>((resolve) => setTimeout(resolve, ms));
   }
 
   private async close() {
