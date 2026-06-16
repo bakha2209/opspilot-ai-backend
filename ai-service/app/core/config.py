@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     # Local Ollama default
     LLM_PROVIDER: str = "ollama"
     OLLAMA_BASE_URL: str = "http://localhost:11434"
-    OLLAMA_MODEL: str = "llama3.1:8b"
+    OLLAMA_MODEL: str = "qwen2.5:7b"
 
     class Config:
         env_file = ".env"

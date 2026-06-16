@@ -52,7 +52,7 @@ services:
       REDIS_HOST: redis
       RABBITMQ_URL: amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbitmq:5672
     ports:
-      - "4000:4000"
+      - "8088:4000"
     volumes:
       - opspilot_uploads:/app/uploads
     depends_on:

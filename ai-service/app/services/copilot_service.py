@@ -1,11 +1,12 @@
 import json
 
+from app.prompts.copilot_prompt import build_copilot_prompt
 from app.schemas.copilot_schema import (
     CopilotChatRequest,
     CopilotChatResponse,
     RecommendedAction,
 )
-from app.services.llm_service import LlmConnectionError, LlmService
+from app.services.llm_service import LlmService
 
 
 class CopilotService:
@@ -13,57 +14,20 @@ class CopilotService:
         self.llm_service = LlmService()
 
     async def chat(self, request: CopilotChatRequest) -> CopilotChatResponse:
-        prompt = self._build_prompt(request)
-        try:
-            raw_output = await self.llm_service.generate(prompt)
-        except LlmConnectionError as error:
-            return CopilotChatResponse(
-                answer=str(error),
-                recommended_actions=[
-                    RecommendedAction(
-                        type="NO_ACTION",
-                        label="LLM service unavailable",
-                        payload={},
-                    )
-                ],
-                raw_model_output=None,
-            )
-
+        prompt = build_copilot_prompt(request.message, request.context)
+        raw_output = await self.llm_service.generate(prompt)
         return self._parse_response(raw_output)
-
-    def _build_prompt(self, request: CopilotChatRequest) -> str:
-        return f"""
-You are OpsPilot AI, an operations copilot for a B2B SaaS inventory system.
-
-Your job:
-- Analyze inventory, stock movement, notifications, and reorder context.
-- Answer clearly and professionally.
-- Recommend safe backend actions only when useful.
-- Do not invent product IDs or warehouse IDs.
-- Use only the provided context.
-
-User message:
-{request.message}
-
-System context JSON:
-{json.dumps(request.context, ensure_ascii=False, indent=2)}
-
-Return ONLY valid JSON with this shape:
-{{
-  "answer": "string",
-  "recommended_actions": [
-    {{
-      "type": "VIEW_LOW_STOCK | CREATE_REORDER_REQUEST | APPROVE_REORDER_REQUEST | VIEW_STOCK_MOVEMENTS | NO_ACTION",
-      "label": "string",
-      "payload": {{}}
-    }}
-  ]
-}}
-"""
 
     def _parse_response(self, raw_output: str) -> CopilotChatResponse:
         try:
-            parsed = json.loads(raw_output)
+            cleaned = raw_output.strip()
+
+            if cleaned.startswith("```json"):
+                cleaned = cleaned.replace("```json", "").replace("```", "").strip()
+            elif cleaned.startswith("```"):
+                cleaned = cleaned.replace("```", "").strip()
+
+            parsed = json.loads(cleaned)
 
             actions = [
                 RecommendedAction(
@@ -75,7 +39,7 @@ Return ONLY valid JSON with this shape:
             ]
 
             return CopilotChatResponse(
-                answer=parsed.get("answer", "I could not generate a proper answer."),
+                answer=parsed.get("answer", "No answer generated."),
                 recommended_actions=actions,
                 raw_model_output=raw_output,
             )

@@ -3,10 +3,6 @@ import httpx
 from app.core.config import settings
 
 
-class LlmConnectionError(Exception):
-    pass
-
-
 class LlmService:
     async def generate(self, prompt: str) -> str:
         if settings.LLM_PROVIDER == "ollama":
@@ -23,15 +19,9 @@ class LlmService:
             "stream": False,
         }
 
-        try:
-            async with httpx.AsyncClient(timeout=120) as client:
-                response = await client.post(url, json=payload)
-                response.raise_for_status()
-                data = response.json()
-        except httpx.ConnectError as exc:
-            raise LlmConnectionError(
-                f"Ollama is not reachable at {settings.OLLAMA_BASE_URL}. "
-                "Start Ollama or update OLLAMA_BASE_URL."
-            ) from exc
+        async with httpx.AsyncClient(timeout=180) as client:
+            response = await client.post(url, json=payload)
+            response.raise_for_status()
+            data = response.json()
 
         return data.get("response", "")
