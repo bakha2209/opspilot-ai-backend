@@ -10,3 +10,5 @@ export * from './reorder-request.entity';
 export * from './audit-log.entity';
 export * from './uploaded-file.entity';
 export * from './company-integration.entity';
+export * from './ai-conversation.entity';
+export * from './ai-message.entity';

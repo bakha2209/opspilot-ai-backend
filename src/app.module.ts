@@ -26,6 +26,10 @@ import { JobsModule } from './modules/jobs/jobs.module';
 import { TelegramModule } from './modules/telegram/telegram.module';
 import { CompanyIntegrationEntity } from './libs/database/entity/company-integration.entity';
 import { CompanyIntegrationsModule } from './modules/company-integrations/company-integrations.module';
+import { AiInternalModule } from './modules/ai-internal/ai-internal.module';
+import { AiChatModule } from './modules/ai-chat/ai-chat.module';
+import { AiConversationEntity } from './libs/database/entity/ai-conversation.entity';
+import { AiMessageEntity } from './libs/database/entity/ai-message.entity';
 
 @Module({
   imports: [
@@ -58,6 +62,8 @@ import { CompanyIntegrationsModule } from './modules/company-integrations/compan
             AuditLogEntity,
             UploadedFileEntity,
             CompanyIntegrationEntity,
+            AiConversationEntity,
+            AiMessageEntity,
           ],
           synchronize,
         };
@@ -84,6 +90,8 @@ import { CompanyIntegrationsModule } from './modules/company-integrations/compan
     JobsModule,
     TelegramModule,
     CompanyIntegrationsModule,
+    AiInternalModule,
+    AiChatModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import {
+  AiConversationRepository,
+  AiMessageRepository,
   AuditLogRepository,
   CompanyIntegrationRepository,
   CompanyRepository,
@@ -37,6 +39,8 @@ import {
     SuperAdminSeeder,
     AuditLogRepository,
     UploadedFileRepository,
+    AiConversationRepository,
+    AiMessageRepository,
   ],
   exports: [
     CompanyRepository,
@@ -50,6 +54,8 @@ import {
     ReorderRequestRepository,
     AuditLogRepository,
     UploadedFileRepository,
+    AiConversationRepository,
+    AiMessageRepository,
   ],
 })
 export class DatabaseModule {}

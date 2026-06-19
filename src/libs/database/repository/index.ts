@@ -9,3 +9,5 @@ export * from './reorder-request.repository';
 export * from './audit-log.repository';
 export * from './uploaded-file.repository';
 export * from './company-integration.repository';
+export * from './ai-conversation.repository';
+export * from './ai-message.repository';

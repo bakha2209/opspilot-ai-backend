@@ -10,6 +10,9 @@ class Settings(BaseSettings):
     OLLAMA_BASE_URL: str = "http://localhost:11434"
     OLLAMA_MODEL: str = "qwen2.5:7b"
 
+    NEST_BACKEND_BASE_URL: str = "http://localhost:4000"
+    AI_INTERNAL_API_KEY: str = "dev-ai-internal-key"
+
     class Config:
         env_file = ".env"
 
