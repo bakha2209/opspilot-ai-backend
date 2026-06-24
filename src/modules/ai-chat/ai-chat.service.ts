@@ -4,7 +4,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
-
 import {
   AiConversationEntity,
   AiMessageEntity,
@@ -21,6 +20,11 @@ import { CreateConversationDto } from './dto/create-conversation.dto';
 import { ChatDto } from './dto/chat.dto';
 import { AiClientService } from './services/ai-client.service';
 import { apiSuccess } from '../../common/utils/api-response.utils';
+import { AuditLogsService } from '../audit-logs/audit-logs.service';
+import { AuditAction } from '../audit-logs/constants/audit-aution.constant';
+import { buildPaginationMeta } from '../../common/utils/pagination.util';
+import { AiConversationQueryDto } from './dto/ai-conversation-query.dto';
+import { UpdateConversationDto } from './dto/update-conversation.dto';
 
 @Injectable()
 export class AiChatService {
@@ -28,6 +32,7 @@ export class AiChatService {
     private readonly aiConversationRepository: AiConversationRepository,
     private readonly aiMessageRepository: AiMessageRepository,
     private readonly aiClientService: AiClientService,
+    private readonly auditLogsService: AuditLogsService,
   ) {}
 
   async createConversation(
@@ -46,15 +51,31 @@ export class AiChatService {
     return apiSuccess('Conversation created successfully', conversation);
   }
 
-  async getConversations(currentUser: AuthPayload) {
+  async getConversations(
+    currentUser: AuthPayload,
+    query: AiConversationQueryDto,
+  ) {
     const companyId = this.getCompanyIdOrThrow(currentUser);
 
-    const conversations = await this.aiConversationRepository.findByUser(
-      companyId,
-      currentUser.sub,
-    );
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 20;
 
-    return apiSuccess('Conversations retrieved successfully', conversations);
+    const { items, totalItems } =
+      await this.aiConversationRepository.findPaginatedByUser({
+        companyId,
+        userId: currentUser.sub,
+        page,
+        limit,
+      });
+
+    return apiSuccess('Conversations retrieved successfully', {
+      items,
+      meta: buildPaginationMeta({
+        page,
+        limit,
+        totalItems,
+      }),
+    });
   }
 
   async getMessages(currentUser: AuthPayload, conversationId: string) {
@@ -113,12 +134,48 @@ export class AiChatService {
       confirmed_action: dto.confirmedAction ?? null,
     });
 
+    if (aiResponse.pending_action) {
+      await this.auditLogsService.create({
+        companyId,
+        userId: currentUser.sub,
+        action: AuditAction.AI_ACTION_REQUESTED,
+        resourceType: 'AI_ACTION',
+        resourceId: null,
+        beforeData: null,
+        afterData: aiResponse.pending_action,
+      });
+    }
+
+    if (dto.confirmedAction) {
+      await this.auditLogsService.create({
+        companyId,
+        userId: currentUser.sub,
+        action: AuditAction.AI_ACTION_CONFIRMED,
+        resourceType: 'AI_ACTION',
+        resourceId: null,
+        beforeData: null,
+        afterData: dto.confirmedAction,
+      });
+
+      await this.auditLogsService.create({
+        companyId,
+        userId: currentUser.sub,
+        action: AuditAction.AI_ACTION_EXECUTED,
+        resourceType: 'AI_ACTION',
+        resourceId: null,
+        beforeData: dto.confirmedAction,
+        afterData: aiResponse,
+      });
+    }
+
     await this.aiMessageRepository.createAndSaveItem({
       conversationId: conversation.id,
       role: 'assistant',
       content: aiResponse.answer,
     } as Partial<AiMessageEntity>);
 
+    conversation.lastMessage =
+      dto.message.length > 200 ? dto.message.slice(0, 200) : dto.message;
     conversation.lastMessageAt = new Date();
 
     await this.aiConversationRepository.saveItem(conversation);
@@ -135,51 +192,93 @@ export class AiChatService {
   }
 
   async chatStream(currentUser: AuthPayload, dto: ChatDto) {
-  const companyId = this.getCompanyIdOrThrow(currentUser);
+    const companyId = this.getCompanyIdOrThrow(currentUser);
 
-  const conversation =
-    await this.aiConversationRepository.findByIdAndUser(
+    const conversation = await this.aiConversationRepository.findByIdAndUser(
       dto.conversationId,
       companyId,
       currentUser.sub,
     );
 
-  if (!conversation) {
-    throw new NotFoundException('Conversation not found');
+    if (!conversation) {
+      throw new NotFoundException('Conversation not found');
+    }
+
+    await this.aiMessageRepository.createAndSaveItem({
+      conversationId: conversation.id,
+      role: 'user',
+      content: dto.message,
+    } as Partial<AiMessageEntity>);
+
+    const history = await this.aiMessageRepository.findLastMessages(
+      conversation.id,
+      20,
+    );
+
+    return this.aiClientService.chatStream({
+      company_id: companyId,
+      user_id: currentUser.sub,
+      conversation_id: conversation.id,
+      message: dto.message,
+      history: history.map((message) => ({
+        role: message.role,
+        content: message.content,
+      })),
+      confirmed_action: dto.confirmedAction ?? null,
+    });
   }
 
-  await this.aiMessageRepository.createAndSaveItem({
-    conversationId: conversation.id,
-    role: 'user',
-    content: dto.message,
-  } as Partial<AiMessageEntity>);
+  async saveAssistantMessage(conversationId: string, content: string) {
+    await this.aiMessageRepository.createAndSaveItem({
+      conversationId,
+      role: 'assistant',
+      content,
+    } as Partial<AiMessageEntity>);
+  }
 
-  const history = await this.aiMessageRepository.findLastMessages(
-    conversation.id,
-    20,
-  );
+  async updateConversation(
+    currentUser: AuthPayload,
+    conversationId: string,
+    dto: UpdateConversationDto,
+  ) {
+    const companyId = this.getCompanyIdOrThrow(currentUser);
 
-  return this.aiClientService.chatStream({
-    company_id: companyId,
-    user_id: currentUser.sub,
-    conversation_id: conversation.id,
-    message: dto.message,
-    history: history.map((message) => ({
-      role: message.role,
-      content: message.content,
-    })),
-    confirmed_action: dto.confirmedAction ?? null,
-  });
-}
+    const conversation = await this.aiConversationRepository.findByIdAndUser(
+      conversationId,
+      companyId,
+      currentUser.sub,
+    );
 
-async saveAssistantMessage(
-  conversationId: string,
-  content: string,
-) {
-  await this.aiMessageRepository.createAndSaveItem({
-    conversationId,
-    role: 'assistant',
-    content,
-  } as Partial<AiMessageEntity>);
-}
+    if (!conversation) {
+      throw new NotFoundException('Conversation not found');
+    }
+
+    if (dto.title !== undefined) {
+      conversation.title = dto.title;
+    }
+
+    const saved = await this.aiConversationRepository.saveItem(conversation);
+
+    return apiSuccess('Conversation updated successfully', saved);
+  }
+
+  async deleteConversation(currentUser: AuthPayload, conversationId: string) {
+    const companyId = this.getCompanyIdOrThrow(currentUser);
+
+    const conversation = await this.aiConversationRepository.findByIdAndUser(
+      conversationId,
+      companyId,
+      currentUser.sub,
+    );
+
+    if (!conversation) {
+      throw new NotFoundException('Conversation not found');
+    }
+
+    await this.aiConversationRepository.softDeleteItem(conversation);
+
+    return apiSuccess('Conversation deleted successfully', {
+      id: conversationId,
+    });
+  }
 }

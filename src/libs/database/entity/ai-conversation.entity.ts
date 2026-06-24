@@ -25,4 +25,11 @@ export class AiConversationEntity extends BaseEntity {
     type: 'timestamptz',
   })
   lastMessageAt!: Date;
+
+  @Column({
+    name: 'last_message',
+    type: 'text',
+    nullable: true,
+  })
+  lastMessage?: string | null;
 }

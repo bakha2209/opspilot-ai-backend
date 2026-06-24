@@ -34,4 +34,30 @@ export class AiConversationRepository extends OrmRepository<AiConversationEntity
       },
     });
   }
+
+  async findPaginatedByUser(params: {
+    companyId: string;
+    userId: string;
+    page: number;
+    limit: number;
+  }) {
+    const { companyId, userId, page, limit } = params;
+
+    const [items, totalItems] = await this.findAndCount({
+      where: {
+        companyId,
+        userId,
+      },
+      order: {
+        lastMessageAt: 'DESC',
+      },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+
+    return {
+      items,
+      totalItems,
+    };
+  }
 }
