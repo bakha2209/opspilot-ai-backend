@@ -20,6 +20,13 @@ class BackendClient:
 
         if tool_name == "get_recent_stock_movements":
             return await self._post("/api/v1/internal/ai/recent-stock-movements", company_id, arguments)
+        
+        if tool_name == "create_reorder_request":
+            return await self._post(
+                "/api/v1/internal/ai/actions/create-reorder",
+                company_id,
+                arguments,
+    )
 
         raise ValueError(f"Unknown tool: {tool_name}")
 

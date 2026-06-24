@@ -110,6 +110,7 @@ export class AiChatService {
         role: message.role,
         content: message.content,
       })),
+      confirmed_action: dto.confirmedAction ?? null,
     });
 
     await this.aiMessageRepository.createAndSaveItem({
@@ -167,6 +168,7 @@ export class AiChatService {
       role: message.role,
       content: message.content,
     })),
+    confirmed_action: dto.confirmedAction ?? null,
   });
 }
 

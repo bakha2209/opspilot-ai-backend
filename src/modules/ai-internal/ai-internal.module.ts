@@ -4,9 +4,18 @@ import { AiInternalController } from './ai-internal.controller';
 import { AiInternalService } from './ai-internal.service';
 import { AiInternalGuard } from './guards/ai-internal.guard';
 import { SecurityModule } from '../../libs/core/security';
+import { AuditLogsModule } from '../audit-logs/audit-logs.module';
+import { EventsModule } from '../events/events.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
-  imports: [DatabaseModule, SecurityModule],
+  imports: [
+    DatabaseModule,
+    SecurityModule,
+    NotificationsModule,
+    EventsModule,
+    AuditLogsModule,
+  ],
   controllers: [AiInternalController],
   providers: [AiInternalService, AiInternalGuard],
 })

@@ -17,8 +17,21 @@ AVAILABLE_TOOLS = [
     {
         "name": "get_recent_stock_movements",
         "description": "Get recent stock movement history.",
+        "arguments": {"limit": "number, optional"},
+    },
+    {
+        "name": "create_reorder_request",
+        "description": "Create a pending reorder request after the user explicitly confirms. Requires warehouseId, productId, and recommendedQuantity.",
         "arguments": {
-            "limit": "number, optional"
+            "warehouseId": "uuid",
+            "productId": "uuid",
+            "recommendedQuantity": "number",
+            "reason": "string, optional",
         },
+    },
+    {
+        "name": "create_stock_adjustment",
+        "description": "Create stock adjustment request",
+        "arguments": {"product_id": "uuid", "quantity": "number"},
     },
 ]

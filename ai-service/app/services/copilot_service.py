@@ -1,11 +1,11 @@
 import json
 from collections.abc import AsyncGenerator
-from urllib import request
 from app.prompts.copilot_prompt import build_copilot_prompt
 from app.prompts.tool_decision_prompt import build_tool_decision_prompt
 from app.schemas.copilot_schema import (
     CopilotChatRequest,
     CopilotChatResponse,
+    PendingAction,
     RecommendedAction,
 )
 from app.schemas.tool_schema import ToolDecision
@@ -19,37 +19,26 @@ class CopilotService:
         self.backend_client = BackendClient()
 
     async def chat(self, request: CopilotChatRequest) -> CopilotChatResponse:
-        tool_results = []
-
-        tool_decision = await self._decide_tools(request.message)
-
-        if tool_decision.needs_tool:
-            for tool_call in tool_decision.tool_calls:
-                result = await self.backend_client.call_tool(
-                    tool_call.name,
-                    request.company_id,
-                    tool_call.arguments,
-                )
-
-                tool_results.append(
-                    {
-                        "tool_name": tool_call.name,
-                        "data": result,
-                    }
-                )
+        tool_results = await self._execute_tools(request)
 
         prompt = build_copilot_prompt(
             message=request.message,
             context=request.context,
             tool_results=tool_results,
+            action_confirmed=request.confirmed_action is not None,
         )
 
         raw_output = await self.llm_service.generate(prompt)
 
         return self._parse_response(raw_output)
 
-    async def _decide_tools(self, message: str) -> ToolDecision:
-        prompt = build_tool_decision_prompt(message)
+    async def _decide_tools(
+        self,
+        message: str,
+        history: list[dict] | None = None,
+        confirmed_action: dict | None = None,
+    ) -> ToolDecision:
+        prompt = build_tool_decision_prompt(message, history, confirmed_action)
         raw_output = await self.llm_service.generate(prompt)
 
         try:
@@ -61,6 +50,48 @@ class CopilotService:
                 needs_tool=False,
                 tool_calls=[],
             )
+
+    async def _execute_tools(self, request: CopilotChatRequest) -> list[dict]:
+        if request.confirmed_action is not None:
+            action = request.confirmed_action
+
+            if action.tool_name != "create_reorder_request":
+                raise ValueError(f"Unsupported confirmed action: {action.tool_name}")
+
+            result = await self.backend_client.call_tool(
+                action.tool_name,
+                request.company_id,
+                action.arguments,
+            )
+            return [{"tool_name": action.tool_name, "data": result}]
+
+        tool_decision = await self._decide_tools(
+            request.message,
+            [item.model_dump() for item in request.history],
+        )
+        tool_results = []
+
+        if not tool_decision.needs_tool:
+            return tool_results
+
+        for tool_call in tool_decision.tool_calls:
+            # Write tools must only be executed from the confirmed_action branch above.
+            if tool_call.name == "create_reorder_request":
+                continue
+
+            result = await self.backend_client.call_tool(
+                tool_call.name,
+                request.company_id,
+                tool_call.arguments,
+            )
+            tool_results.append(
+                {
+                    "tool_name": tool_call.name,
+                    "data": result,
+                }
+            )
+
+        return tool_results
 
     def _parse_response(self, raw_output: str) -> CopilotChatResponse:
         try:
@@ -75,10 +106,17 @@ class CopilotService:
                 )
                 for action in parsed.get("recommended_actions", [])
             ]
+            pending_action_data = parsed.get("pending_action")
+            pending_action = (
+                PendingAction(**pending_action_data)
+                if pending_action_data
+                else None
+            )
 
             return CopilotChatResponse(
                 answer=parsed.get("answer", "No answer generated."),
                 recommended_actions=actions,
+                pending_action=pending_action,
                 raw_model_output=raw_output,
             )
         except Exception:
@@ -107,29 +145,13 @@ class CopilotService:
     async def chat_stream(
         self, request: CopilotChatRequest
     ) -> AsyncGenerator[str, None]:
-        tool_results = []
-
-        tool_decision = await self._decide_tools(request.message)
-
-        if tool_decision.needs_tool:
-            for tool_call in tool_decision.tool_calls:
-                result = await self.backend_client.call_tool(
-                    tool_call.name,
-                    request.company_id,
-                    tool_call.arguments,
-                )
-
-                tool_results.append(
-                    {
-                        "tool_name": tool_call.name,
-                        "data": result,
-                    }
-                )
+        tool_results = await self._execute_tools(request)
 
         prompt = build_copilot_prompt(
             message=request.message,
             context=request.context,
             tool_results=tool_results,
+            action_confirmed=request.confirmed_action is not None,
         )
 
         async for token in self.llm_service.stream(prompt):

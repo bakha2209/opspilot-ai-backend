@@ -3,6 +3,7 @@ import { ApiHeader, ApiTags } from '@nestjs/swagger';
 import { AiInternalService } from './ai-internal.service';
 import { AiToolRequestDto } from './dto/ai-tool-request.dto';
 import { AiInternalGuard } from './guards/ai-internal.guard';
+import { CreateAiReorderActionDto } from './dto/create-ai-reorder-action.dto';
 
 @ApiTags('AI Internal')
 @ApiHeader({
@@ -36,5 +37,10 @@ export class AiInternalController {
       dto.companyId,
       Number(dto.limit ?? 20),
     );
+  }
+
+  @Post('actions/create-reorder')
+  createReorderAction(@Body() dto: CreateAiReorderActionDto) {
+    return this.aiInternalService.createReorderAction(dto);
   }
 }
