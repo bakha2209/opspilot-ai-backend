@@ -12,6 +12,11 @@ import {
 import {
   AiConversationRepository,
   AiMessageRepository,
+  InventoryRepository,
+  NotificationRepository,
+  ProductRepository,
+  ReorderRequestRepository,
+  WarehouseRepository,
 } from '../../libs/database/repository';
 
 import { AuthPayload } from '../auth/types/auth-payload.type';
@@ -33,7 +38,41 @@ export class AiChatService {
     private readonly aiMessageRepository: AiMessageRepository,
     private readonly aiClientService: AiClientService,
     private readonly auditLogsService: AuditLogsService,
+    private readonly warehouseRepository: WarehouseRepository,
+    private readonly productRepository: ProductRepository,
+    private readonly inventoryRepository: InventoryRepository,
+    private readonly reorderRequestRepository: ReorderRequestRepository,
+    private readonly notificationRepository: NotificationRepository,
   ) {}
+
+  private async buildAiContext(companyId: string) {
+    const [
+      totalWarehouses,
+      totalProducts,
+      totalInventoryItems,
+      lowStockItems,
+      pendingReorderCount,
+      unreadNotificationCount,
+    ] = await Promise.all([
+      this.warehouseRepository.countByCompanyId(companyId),
+      this.productRepository.countByCompanyId(companyId),
+      this.inventoryRepository.countByCompanyId(companyId),
+      this.inventoryRepository.findLowStockByCompanyId(companyId),
+      this.reorderRequestRepository.countPendingByCompanyId(companyId),
+      this.notificationRepository.countUnreadByCompanyId(companyId),
+    ]);
+
+    return {
+      dashboardSummary: {
+        totalWarehouses,
+        totalProducts,
+        totalInventoryItems,
+        lowStockCount: lowStockItems.length,
+        pendingReorderCount,
+        unreadNotificationCount,
+      },
+    };
+  }
 
   async createConversation(
     currentUser: AuthPayload,
@@ -121,16 +160,21 @@ export class AiChatService {
       20,
     );
 
+    const context = await this.buildAiContext(companyId);
+
     const aiResponse = await this.aiClientService.chat({
       company_id: companyId,
       user_id: currentUser.sub,
       conversation_id: conversation.id,
       message: dto.message,
 
+      context,
+
       history: history.map((message) => ({
         role: message.role,
         content: message.content,
       })),
+
       confirmed_action: dto.confirmedAction ?? null,
     });
 
@@ -215,15 +259,21 @@ export class AiChatService {
       20,
     );
 
+    const context = await this.buildAiContext(companyId);
+
     return this.aiClientService.chatStream({
       company_id: companyId,
       user_id: currentUser.sub,
       conversation_id: conversation.id,
       message: dto.message,
+
+      context,
+
       history: history.map((message) => ({
         role: message.role,
         content: message.content,
       })),
+
       confirmed_action: dto.confirmedAction ?? null,
     });
   }
