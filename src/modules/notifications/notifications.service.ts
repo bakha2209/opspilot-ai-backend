@@ -139,4 +139,5 @@ export class NotificationsService {
 
     return currentUser.companyId;
   }
+
 }

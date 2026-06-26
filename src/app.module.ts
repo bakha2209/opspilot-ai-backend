@@ -31,6 +31,7 @@ import { AiChatModule } from './modules/ai-chat/ai-chat.module';
 import { AiConversationEntity } from './libs/database/entity/ai-conversation.entity';
 import { AiMessageEntity } from './libs/database/entity/ai-message.entity';
 import { ScheduleModule } from '@nestjs/schedule';
+import { HealthModule } from './modules/health/health.module';
 
 @Module({
   imports: [
@@ -94,6 +95,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     CompanyIntegrationsModule,
     AiInternalModule,
     AiChatModule,
+    HealthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
