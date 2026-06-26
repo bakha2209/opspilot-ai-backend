@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { DatabaseModule } from '../../libs/database/database.module';
 import { AiInternalController } from './ai-internal.controller';
 import { AiInternalService } from './ai-internal.service';
@@ -12,11 +12,12 @@ import { NotificationsModule } from '../notifications/notifications.module';
   imports: [
     DatabaseModule,
     SecurityModule,
-    NotificationsModule,
+    forwardRef(() => NotificationsModule),
     EventsModule,
     AuditLogsModule,
   ],
   controllers: [AiInternalController],
   providers: [AiInternalService, AiInternalGuard],
+  exports: [AiInternalService],
 })
 export class AiInternalModule {}

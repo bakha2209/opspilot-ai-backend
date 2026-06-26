@@ -5,6 +5,7 @@ import { AiToolRequestDto } from './dto/ai-tool-request.dto';
 import { AiInternalGuard } from './guards/ai-internal.guard';
 import { CreateAiReorderActionDto } from './dto/create-ai-reorder-action.dto';
 import { AiAnalyticsRequestDto } from './dto/ai-analytics-request.dto';
+import { WeeklyReportDto } from './dto/weekly-report.dto';
 
 @ApiTags('AI Internal')
 @ApiHeader({
@@ -58,5 +59,10 @@ export class AiInternalController {
   @Post('analytics/inventory-risk')
   inventoryRisk(@Body() dto: AiAnalyticsRequestDto) {
     return this.aiInternalService.inventoryRisk(dto);
+  }
+
+  @Post('reports/weekly')
+  weeklyReport(@Body() dto: WeeklyReportDto) {
+    return this.aiInternalService.weeklyOperationsReport(dto);
   }
 }

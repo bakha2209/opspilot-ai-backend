@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { BullModule } from '@nestjs/bullmq';
 import { ConfigService } from '@nestjs/config';
 import { JobsService } from './jobs.service';
@@ -6,7 +6,9 @@ import { QueueName } from './constants/queue.constant';
 import { NotificationProcessor } from './processors/notification.processor';
 import { TelegramModule } from '../telegram/telegram.module';
 import { CompanyIntegrationsModule } from '../company-integrations/company-integrations.module';
-
+import { AiReportProcessor } from './processors/ai-report.processor';
+import { JobsController } from './jobs.controller';
+import { AiInternalModule } from '../ai-internal/ai-internal.module';
 
 @Module({
   imports: [
@@ -25,10 +27,15 @@ import { CompanyIntegrationsModule } from '../company-integrations/company-integ
     BullModule.registerQueue({
       name: QueueName.NOTIFICATION,
     }),
+    BullModule.registerQueue({
+      name: QueueName.AI_REPORT,
+    }),
     TelegramModule,
     CompanyIntegrationsModule,
+    forwardRef(() => AiInternalModule),
   ],
-  providers: [JobsService, NotificationProcessor],
+  providers: [JobsService, NotificationProcessor, AiReportProcessor],
   exports: [JobsService],
+  controllers: [JobsController],
 })
 export class JobsModule {}

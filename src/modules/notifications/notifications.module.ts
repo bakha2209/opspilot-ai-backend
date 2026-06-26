@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { DatabaseModule } from '../../libs/database/database.module';
 import { NotificationsController } from './notifications.controller';
 import { NotificationsService } from './notifications.service';
@@ -7,7 +7,12 @@ import { RealtimeModule } from '../realtime/realtime.module';
 import { JobsModule } from '../jobs/jobs.module';
 
 @Module({
-  imports: [DatabaseModule, SecurityModule, RealtimeModule,JobsModule],
+  imports: [
+    DatabaseModule,
+    SecurityModule,
+    RealtimeModule,
+    forwardRef(() => JobsModule),
+  ],
   controllers: [NotificationsController],
   providers: [NotificationsService],
   exports: [NotificationsService],

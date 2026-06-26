@@ -57,6 +57,13 @@ class BackendClient:
                 arguments,
             )
 
+        if tool_name == "generate_weekly_operations_report":
+            return await self._post(
+                "/api/v1/internal/ai/reports/weekly",
+                company_id,
+                arguments,
+            )
+
         raise ValueError(f"Unknown tool: {tool_name}")
 
     async def _post(self, path: str, company_id: str, body: dict):

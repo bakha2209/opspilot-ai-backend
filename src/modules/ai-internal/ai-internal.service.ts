@@ -1,4 +1,8 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import {
   InventoryRepository,
   ReorderRequestRepository,
@@ -11,11 +15,15 @@ import { AuditLogsService } from '../audit-logs/audit-logs.service';
 import { EventsService } from '../events/events.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { CreateAiReorderActionDto } from './dto/create-ai-reorder-action.dto';
-import { ReorderRequestEntity, ReorderRequestStatus } from '../../libs/database/entity/reorder-request.entity';
+import {
+  ReorderRequestEntity,
+  ReorderRequestStatus,
+} from '../../libs/database/entity/reorder-request.entity';
 import { AuditAction } from '../audit-logs/constants/audit-aution.constant';
 import { NotificationType } from '../../libs/database/entity/notification.entity';
 import { EventName } from '../events/constants/event-name.constant';
 import { AiAnalyticsRequestDto } from './dto/ai-analytics-request.dto';
+import { WeeklyReportDto } from './dto/weekly-report.dto';
 
 @Injectable()
 export class AiInternalService {
@@ -333,6 +341,42 @@ export class AiInternalService {
     return {
       lowStockCount: risks.length,
       risks,
+    };
+  }
+
+  async weeklyOperationsReport(dto: WeeklyReportDto) {
+    const [products, warehouses, lowStock, pendingReorders, topMoving, risks] =
+      await Promise.all([
+        this.productRepository.countByCompanyId(dto.companyId),
+        this.warehouseRepository.countByCompanyId(dto.companyId),
+        this.inventoryRepository.findLowStockByCompanyId(dto.companyId),
+        this.reorderRequestRepository.findPendingByCompanyId(dto.companyId),
+        this.topMovingProducts({
+          companyId: dto.companyId,
+          days: 7,
+          limit: 5,
+        }),
+        this.inventoryRisk({
+          companyId: dto.companyId,
+        }),
+      ]);
+
+    return {
+      generatedAt: new Date(),
+
+      inventory: {
+        totalProducts: products,
+        totalWarehouses: warehouses,
+        lowStockCount: lowStock.length,
+      },
+
+      reorders: {
+        pending: pendingReorders.length,
+      },
+
+      topMovingProducts: topMoving.items,
+
+      risks: risks.risks,
     };
   }
 }
