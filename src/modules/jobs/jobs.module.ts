@@ -9,9 +9,12 @@ import { CompanyIntegrationsModule } from '../company-integrations/company-integ
 import { AiReportProcessor } from './processors/ai-report.processor';
 import { JobsController } from './jobs.controller';
 import { AiInternalModule } from '../ai-internal/ai-internal.module';
+import { WeeklyReportScheduler } from './schedulers/weekly-report.scheduler';
+import { DatabaseModule } from '../../libs/database/database.module';
 
 @Module({
   imports: [
+    DatabaseModule,
     BullModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
@@ -34,7 +37,12 @@ import { AiInternalModule } from '../ai-internal/ai-internal.module';
     CompanyIntegrationsModule,
     forwardRef(() => AiInternalModule),
   ],
-  providers: [JobsService, NotificationProcessor, AiReportProcessor],
+  providers: [
+    JobsService,
+    NotificationProcessor,
+    AiReportProcessor,
+    WeeklyReportScheduler,
+  ],
   exports: [JobsService],
   controllers: [JobsController],
 })

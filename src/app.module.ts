@@ -30,12 +30,14 @@ import { AiInternalModule } from './modules/ai-internal/ai-internal.module';
 import { AiChatModule } from './modules/ai-chat/ai-chat.module';
 import { AiConversationEntity } from './libs/database/entity/ai-conversation.entity';
 import { AiMessageEntity } from './libs/database/entity/ai-message.entity';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    ScheduleModule.forRoot(),
 
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
