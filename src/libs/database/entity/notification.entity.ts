@@ -44,4 +44,25 @@ export class NotificationEntity extends BaseEntity {
 
   @Column({ name: 'metadata', type: 'jsonb', nullable: true })
   metadata?: Record<string, any> | null;
+
+  @Column({
+    name: 'resolved_at',
+    type: 'timestamptz',
+    nullable: true,
+  })
+  resolvedAt?: Date | null;
+
+  @Column({
+    name: 'resolved_by_user_id',
+    type: 'uuid',
+    nullable: true,
+  })
+  resolvedByUserId?: string | null;
+
+  @ManyToOne(() => UserEntity, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'resolved_by_user_id' })
+  resolvedByUser?: UserEntity | null;
 }

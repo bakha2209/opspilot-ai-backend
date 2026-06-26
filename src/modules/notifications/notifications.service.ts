@@ -31,6 +31,27 @@ export class NotificationsService {
     private readonly jobsService: JobsService,
   ) {}
 
+  async resolve(currentUser: AuthPayload, id: string) {
+    const companyId = this.getCompanyIdOrThrow(currentUser);
+
+    const notification = await this.notificationRepository.findByIdAndCompanyId(
+      id,
+      companyId,
+    );
+
+    if (!notification) {
+      throw new NotFoundException('Notification not found');
+    }
+
+    notification.resolvedAt = new Date();
+    notification.resolvedByUserId = currentUser.sub;
+    notification.isRead = true;
+
+    const saved = await this.notificationRepository.saveItem(notification);
+
+    return apiSuccess('Notification resolved successfully', saved);
+  }
+
   async createSystemNotification(input: CreateNotificationInput) {
     const notification = await this.notificationRepository.createAndSaveItem({
       companyId: input.companyId,

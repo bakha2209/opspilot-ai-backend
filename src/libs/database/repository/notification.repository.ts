@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { DataSource } from 'typeorm';
+import { DataSource, IsNull, MoreThanOrEqual } from 'typeorm';
 import { OrmRepository } from '../../core/typeorm/orm.repository';
-import { NotificationEntity } from '../entity';
+import { NotificationEntity, NotificationType } from '../entity';
 
 @Injectable()
 export class NotificationRepository extends OrmRepository<NotificationEntity> {
@@ -39,6 +39,20 @@ export class NotificationRepository extends OrmRepository<NotificationEntity> {
       where: {
         companyId,
         isRead: false,
+      },
+    });
+  }
+
+  async findRecentUnresolvedAiAlert(companyId: string, since: Date) {
+    return this.findItemOne({
+      where: {
+        companyId,
+        type: NotificationType.AI_ALERT,
+        resolvedAt: IsNull(),
+        createdAt: MoreThanOrEqual(since),
+      },
+      order: {
+        createdAt: 'DESC',
       },
     });
   }

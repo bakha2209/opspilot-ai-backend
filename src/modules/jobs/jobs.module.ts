@@ -11,6 +11,8 @@ import { JobsController } from './jobs.controller';
 import { AiInternalModule } from '../ai-internal/ai-internal.module';
 import { WeeklyReportScheduler } from './schedulers/weekly-report.scheduler';
 import { DatabaseModule } from '../../libs/database/database.module';
+import { InventoryRiskMonitorScheduler } from './schedulers/inventory-risk-monitor.scheduler';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
@@ -35,6 +37,7 @@ import { DatabaseModule } from '../../libs/database/database.module';
     }),
     TelegramModule,
     CompanyIntegrationsModule,
+    forwardRef(() => NotificationsModule),
     forwardRef(() => AiInternalModule),
   ],
   providers: [
@@ -42,6 +45,7 @@ import { DatabaseModule } from '../../libs/database/database.module';
     NotificationProcessor,
     AiReportProcessor,
     WeeklyReportScheduler,
+    InventoryRiskMonitorScheduler,
   ],
   exports: [JobsService],
   controllers: [JobsController],

@@ -45,4 +45,15 @@ export class NotificationsController {
   markAsRead(@CurrentUser() currentUser: AuthPayload, @Param('id') id: string) {
     return this.notificationsService.markAsRead(currentUser, id);
   }
+
+  @Patch(':id/resolve')
+  @Auth(
+    UserRole.COMPANY_ADMIN,
+    UserRole.OPERATIONS_MANAGER,
+    UserRole.WAREHOUSE_STAFF,
+  )
+  @ApiOperation({ summary: 'Resolve notification' })
+  resolve(@CurrentUser() currentUser: AuthPayload, @Param('id') id: string) {
+    return this.notificationsService.resolve(currentUser, id);
+  }
 }
