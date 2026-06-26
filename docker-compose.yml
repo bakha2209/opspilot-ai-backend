@@ -53,7 +53,7 @@ services:
       RABBITMQ_URL: amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbitmq:5672
       AI_SERVICE_URL: ${AI_SERVICE_URL}
     ports:
-      - "8010:4000"
+      - "4000:4000"
     volumes:
       - opspilot_uploads:/app/uploads
     depends_on:

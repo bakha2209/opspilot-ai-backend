@@ -4,6 +4,7 @@ import { AiInternalService } from './ai-internal.service';
 import { AiToolRequestDto } from './dto/ai-tool-request.dto';
 import { AiInternalGuard } from './guards/ai-internal.guard';
 import { CreateAiReorderActionDto } from './dto/create-ai-reorder-action.dto';
+import { AiAnalyticsRequestDto } from './dto/ai-analytics-request.dto';
 
 @ApiTags('AI Internal')
 @ApiHeader({
@@ -42,5 +43,20 @@ export class AiInternalController {
   @Post('actions/create-reorder')
   createReorderAction(@Body() dto: CreateAiReorderActionDto) {
     return this.aiInternalService.createReorderAction(dto);
+  }
+
+  @Post('analytics/top-moving-products')
+  topMovingProducts(@Body() dto: AiAnalyticsRequestDto) {
+    return this.aiInternalService.topMovingProducts(dto);
+  }
+
+  @Post('analytics/slow-moving-products')
+  slowMovingProducts(@Body() dto: AiAnalyticsRequestDto) {
+    return this.aiInternalService.slowMovingProducts(dto);
+  }
+
+  @Post('analytics/inventory-risk')
+  inventoryRisk(@Body() dto: AiAnalyticsRequestDto) {
+    return this.aiInternalService.inventoryRisk(dto);
   }
 }

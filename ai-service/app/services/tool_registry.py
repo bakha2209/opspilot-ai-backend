@@ -34,4 +34,25 @@ AVAILABLE_TOOLS = [
         "description": "Create stock adjustment request",
         "arguments": {"product_id": "uuid", "quantity": "number"},
     },
+    {
+    "name": "get_top_moving_products",
+    "description": "Returns products with the highest stock movement quantity in a recent period.",
+    "arguments": {
+        "days": "number, optional",
+        "limit": "number, optional"
+    },
+},
+{
+    "name": "get_slow_moving_products",
+    "description": "Returns products with no recent stock movements in a recent period.",
+    "arguments": {
+        "days": "number, optional",
+        "limit": "number, optional"
+    },
+},
+{
+    "name": "get_inventory_risk",
+    "description": "Returns low stock inventory risks and whether each risk already has a pending reorder.",
+    "arguments": {},
+},
 ]

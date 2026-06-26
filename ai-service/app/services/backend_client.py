@@ -10,23 +10,52 @@ class BackendClient:
 
     async def call_tool(self, tool_name: str, company_id: str, arguments: dict):
         if tool_name == "get_dashboard_summary":
-            return await self._post("/api/v1/internal/ai/dashboard-summary", company_id, arguments)
+            return await self._post(
+                "/api/v1/internal/ai/dashboard-summary", company_id, arguments
+            )
 
         if tool_name == "get_low_stock_products":
-            return await self._post("/api/v1/internal/ai/low-stock", company_id, arguments)
+            return await self._post(
+                "/api/v1/internal/ai/low-stock", company_id, arguments
+            )
 
         if tool_name == "get_pending_reorders":
-            return await self._post("/api/v1/internal/ai/pending-reorders", company_id, arguments)
+            return await self._post(
+                "/api/v1/internal/ai/pending-reorders", company_id, arguments
+            )
 
         if tool_name == "get_recent_stock_movements":
-            return await self._post("/api/v1/internal/ai/recent-stock-movements", company_id, arguments)
-        
+            return await self._post(
+                "/api/v1/internal/ai/recent-stock-movements", company_id, arguments
+            )
+
         if tool_name == "create_reorder_request":
             return await self._post(
                 "/api/v1/internal/ai/actions/create-reorder",
                 company_id,
                 arguments,
-    )
+            )
+
+        if tool_name == "get_top_moving_products":
+            return await self._post(
+                "/api/v1/internal/ai/analytics/top-moving-products",
+                company_id,
+                arguments,
+            )
+
+        if tool_name == "get_slow_moving_products":
+            return await self._post(
+                "/api/v1/internal/ai/analytics/slow-moving-products",
+                company_id,
+                arguments,
+            )
+
+        if tool_name == "get_inventory_risk":
+            return await self._post(
+                "/api/v1/internal/ai/analytics/inventory-risk",
+                company_id,
+                arguments,
+            )
 
         raise ValueError(f"Unknown tool: {tool_name}")
 

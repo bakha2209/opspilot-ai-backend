@@ -15,6 +15,7 @@ import { ReorderRequestEntity, ReorderRequestStatus } from '../../libs/database/
 import { AuditAction } from '../audit-logs/constants/audit-aution.constant';
 import { NotificationType } from '../../libs/database/entity/notification.entity';
 import { EventName } from '../events/constants/event-name.constant';
+import { AiAnalyticsRequestDto } from './dto/ai-analytics-request.dto';
 
 @Injectable()
 export class AiInternalService {
@@ -205,6 +206,133 @@ export class AiInternalService {
       currentQuantity: inventory.quantity,
       safetyStock: product.safetyStock,
       recommendedQuantity: dto.recommendedQuantity,
+    };
+  }
+
+  async topMovingProducts(dto: AiAnalyticsRequestDto) {
+    const days = dto.days ?? 30;
+    const limit = dto.limit ?? 10;
+
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+
+    const movements =
+      await this.stockMovementRepository.findRecentByCompanyIdAndDateRange({
+        companyId: dto.companyId,
+        startDate,
+      });
+
+    const map = new Map<
+      string,
+      {
+        productId: string;
+        productName: string;
+        sku: string | null;
+        totalMovedQuantity: number;
+        movementCount: number;
+      }
+    >();
+
+    for (const movement of movements) {
+      const productId = movement.productId;
+
+      if (!map.has(productId)) {
+        map.set(productId, {
+          productId,
+          productName: movement.product?.name ?? 'Unknown',
+          sku: movement.product?.sku ?? null,
+          totalMovedQuantity: 0,
+          movementCount: 0,
+        });
+      }
+
+      const item = map.get(productId)!;
+      item.totalMovedQuantity += movement.quantity;
+      item.movementCount += 1;
+    }
+
+    const items = Array.from(map.values())
+      .sort((a, b) => b.totalMovedQuantity - a.totalMovedQuantity)
+      .slice(0, limit);
+
+    return {
+      periodDays: days,
+      items,
+    };
+  }
+
+  async slowMovingProducts(dto: AiAnalyticsRequestDto) {
+    const days = dto.days ?? 30;
+    const limit = dto.limit ?? 10;
+
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+
+    const [products, movements] = await Promise.all([
+      this.productRepository.findByCompanyId(dto.companyId),
+      this.stockMovementRepository.findRecentByCompanyIdAndDateRange({
+        companyId: dto.companyId,
+        startDate,
+      }),
+    ]);
+
+    const movedProductIds = new Set(
+      movements.map((movement) => movement.productId),
+    );
+
+    const items = products
+      .filter((product) => !movedProductIds.has(product.id))
+      .slice(0, limit)
+      .map((product) => ({
+        productId: product.id,
+        productName: product.name,
+        sku: product.sku,
+        safetyStock: product.safetyStock,
+      }));
+
+    return {
+      periodDays: days,
+      items,
+    };
+  }
+
+  async inventoryRisk(dto: AiAnalyticsRequestDto) {
+    const lowStockItems =
+      await this.inventoryRepository.findLowStockByCompanyId(dto.companyId);
+
+    const pendingReorders =
+      await this.reorderRequestRepository.findPendingByCompanyId(dto.companyId);
+
+    const risks = lowStockItems.map((item) => {
+      const relatedPendingReorder = pendingReorders.find(
+        (reorder) =>
+          reorder.productId === item.productId &&
+          reorder.warehouseId === item.warehouseId,
+      );
+
+      return {
+        inventoryId: item.id,
+        productId: item.productId,
+        productName: item.product?.name ?? null,
+        sku: item.product?.sku ?? null,
+        warehouseId: item.warehouseId,
+        warehouseName: item.warehouse?.name ?? null,
+        currentQuantity: item.quantity,
+        safetyStock: item.product?.safetyStock ?? null,
+        hasPendingReorder: Boolean(relatedPendingReorder),
+        pendingReorderId: relatedPendingReorder?.id ?? null,
+        riskLevel:
+          item.quantity <= 0
+            ? 'CRITICAL'
+            : relatedPendingReorder
+              ? 'MEDIUM'
+              : 'HIGH',
+      };
+    });
+
+    return {
+      lowStockCount: risks.length,
+      risks,
     };
   }
 }

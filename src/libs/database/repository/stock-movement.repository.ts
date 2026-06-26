@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DataSource } from 'typeorm';
+import { DataSource, MoreThanOrEqual } from 'typeorm';
 import { OrmRepository } from '../../core/typeorm/orm.repository';
 import { StockMovementEntity } from '../entity';
 
@@ -49,6 +49,25 @@ export class StockMovementRepository extends OrmRepository<StockMovementEntity> 
       },
       order: { createdAt: 'DESC' },
       take: limit,
+    });
+  }
+
+  async findRecentByCompanyIdAndDateRange(params: {
+    companyId: string;
+    startDate: Date;
+  }) {
+    return this.findItemMany({
+      where: {
+        companyId: params.companyId,
+        createdAt: MoreThanOrEqual(params.startDate),
+      },
+      relations: {
+        product: true,
+        warehouse: true,
+      },
+      order: {
+        createdAt: 'DESC',
+      },
     });
   }
 }
