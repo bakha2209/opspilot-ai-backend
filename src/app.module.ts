@@ -32,6 +32,7 @@ import { AiConversationEntity } from './libs/database/entity/ai-conversation.ent
 import { AiMessageEntity } from './libs/database/entity/ai-message.entity';
 import { ScheduleModule } from '@nestjs/schedule';
 import { HealthModule } from './modules/health/health.module';
+import { BlockchainModule } from './blockchain/blockchain.module';
 
 @Module({
   imports: [
@@ -96,6 +97,7 @@ import { HealthModule } from './modules/health/health.module';
     AiInternalModule,
     AiChatModule,
     HealthModule,
+    BlockchainModule,
   ],
   controllers: [AppController],
   providers: [AppService],

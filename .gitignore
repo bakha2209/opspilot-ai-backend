@@ -42,6 +42,10 @@ lerna-debug.log*
 .env.production.local
 .env.local
 
+# Uploads
+uploads/
+tmp/
+
 # temp directory
 .temp
 .tmp
@@ -54,3 +58,43 @@ pids
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+blockchain/chaincode/**/node_modules
+
+
+#################################################
+# Hyperledger Fabric generated files
+#################################################
+
+# Generated crypto materials
+blockchain/organizations/
+
+# Channel artifacts
+blockchain/channel-artifacts/
+
+# Ledger data
+blockchain/system-genesis-block/
+
+# Chaincode packages
+blockchain/chaincode/*.tar.gz
+
+# Fabric runtime
+blockchain/data/
+
+# Fabric binaries
+blockchain/bin/
+
+# Fabric samples
+blockchain/fabric-samples/
+
+# Generated configs
+blockchain/*.block
+blockchain/*.tx
+
+#################################################
+# Python AI
+#################################################
+
+ai-service/.venv/
+ai-service/__pycache__/
+ai-service/**/*.pyc

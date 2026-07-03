@@ -56,6 +56,7 @@ services:
       - "4000:4000"
     volumes:
       - opspilot_uploads:/app/uploads
+      - ./blockchain:/app/blockchain
     depends_on:
       - postgres
       - redis
@@ -63,6 +64,7 @@ services:
       - ai-service
     networks:
       - opspilot-network
+      - fabric-network
   ai-service:
     build:
       context: ./ai-service
@@ -86,3 +88,7 @@ volumes:
 networks:
   opspilot-network:
     driver: bridge
+
+  fabric-network:
+    external: true
+    name: opspilot-fabric-network  
