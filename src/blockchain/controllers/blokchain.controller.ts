@@ -17,7 +17,7 @@ export class BlockchainController {
       data: await this.fabricGatewayService.testConnection(),
     };
   }
-  
+
   @Post('audit-anchor')
   async createAuditAnchor(@Body() dto: CreateAuditAnchorDto) {
     return {
@@ -37,11 +37,14 @@ export class BlockchainController {
   }
 
   @Post('audit-anchor/:eventId/verify')
-  async verifyAuditAnchor(@Param('eventId') eventId: string) {
+  async verifyAuditAnchor(
+    @Param('eventId') eventId: string,
+    @Body('payloadHash') payloadHash: string,
+  ) {
     return {
       success: true,
       message: 'Audit anchor verified',
-      data: await this.blockchainService.verifyAuditAnchor(eventId),
+      data: await this.blockchainService.verifyAuditAnchor(eventId, payloadHash),
     };
   }
 }

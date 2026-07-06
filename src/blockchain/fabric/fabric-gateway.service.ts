@@ -110,4 +110,69 @@ export class FabricGatewayService implements OnModuleDestroy {
 
     return path.join(dirPath, files[0]);
   }
+
+  async createAuditAnchor(input: {
+    eventId: string;
+    companyId: string;
+    eventType: string;
+    resourceType: string;
+    resourceId: string;
+    payloadHash: string;
+    createdAt: string;
+  }) {
+    const contract = await this.getContract();
+
+    const transaction = contract.newProposal('CreateAuditAnchor', {
+      arguments: [
+        input.eventId,
+        input.companyId,
+        input.eventType,
+        input.resourceType,
+        input.resourceId,
+        input.payloadHash,
+        input.createdAt,
+      ],
+    });
+
+    const endorsedTransaction = await transaction.endorse();
+
+    const txId = transaction.getTransactionId();
+
+    const committedTransaction = await endorsedTransaction.submit();
+
+    const resultBytes = committedTransaction.getResult();
+    const resultJson = new TextDecoder().decode(resultBytes);
+
+    return {
+      txId,
+      result: JSON.parse(resultJson),
+    };
+  }
+
+  async getAuditAnchor(eventId: string) {
+    const contract = await this.getContract();
+
+    const resultBytes = await contract.evaluateTransaction(
+      'GetAuditAnchor',
+      eventId,
+    );
+
+    const resultJson = new TextDecoder().decode(resultBytes);
+
+    return JSON.parse(resultJson);
+  }
+
+  async verifyAuditAnchor(eventId: string, payloadHash: string) {
+    const contract = await this.getContract();
+
+    const resultBytes = await contract.evaluateTransaction(
+      'VerifyAuditAnchor',
+      eventId,
+      payloadHash,
+    );
+
+    const resultJson = new TextDecoder().decode(resultBytes);
+
+    return JSON.parse(resultJson);
+  }
 }

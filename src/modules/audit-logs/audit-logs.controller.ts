@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UserRole } from '../../common/enums/user-role.enum';
 import { Auth } from '../auth/decorators/auth.decorator';
@@ -40,5 +40,10 @@ export class AuditLogsController {
       resourceType,
       resourceId,
     );
+  }
+
+  @Post(':id/verify')
+  verify(@Param('id') id: string) {
+    return this.auditLogsService.verifyAuditLog(id);
   }
 }

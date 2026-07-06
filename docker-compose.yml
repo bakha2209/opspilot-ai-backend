@@ -78,7 +78,7 @@ services:
       NEST_BACKEND_BASE_URL: http://backend:4000
       AI_INTERNAL_API_KEY: ${AI_INTERNAL_API_KEY}
     ports:
-      - "8001:8001"
+      - "8008:8001"
     networks:
       - opspilot-network
 volumes:

@@ -39,4 +39,40 @@ export class AuditLogEntity extends BaseEntity {
 
   @Column({ name: 'user_agent', type: 'text', nullable: true })
   userAgent?: string | null;
+
+  @Column({
+    name: 'blockchain_tx_id',
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
+  blockchainTxId?: string | null;
+
+  @Column({
+    name: 'blockchain_status',
+    type: 'varchar',
+    length: 50,
+    nullable: true,
+  })
+  blockchainStatus?: string | null;
+
+  @Column({ name: 'blockchain_verified', type: 'boolean', default: false })
+  blockchainVerified!: boolean;
+
+  @Column({ name: 'blockchain_anchor_time', type: 'timestamp', nullable: true })
+  blockchainAnchorTime?: Date | null;
+
+  @Column({
+    name: 'blockchain_event_id',
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
+  blockchainEventId?: string | null;
+
+  @Column({ name: 'blockchain_retry_count', type: 'integer', default: 0 })
+  blockchainRetryCount!: number;
+
+  @Column({ name: 'blockchain_last_error', type: 'text', nullable: true })
+  blockchainLastError?: string | null;
 }

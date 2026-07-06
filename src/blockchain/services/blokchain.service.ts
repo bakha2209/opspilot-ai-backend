@@ -1,30 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { CreateAuditAnchorDto } from '../dto/create-audit-anchor.dto';
+import { FabricGatewayService } from '../fabric/fabric-gateway.service';
 
 @Injectable()
 export class BlockchainService {
+  constructor(private readonly fabricGatewayService: FabricGatewayService) {}
+
   async createAuditAnchor(dto: CreateAuditAnchorDto) {
-    return {
-      eventId: dto.eventId,
-      txId: null,
-      status: 'PENDING_HYPERLEDGER_INTEGRATION',
-      anchoredAt: null,
-    };
+    return this.fabricGatewayService.createAuditAnchor(dto);
   }
 
   async getAuditAnchor(eventId: string) {
-    return {
-      eventId,
-      txId: null,
-      status: 'NOT_CONNECTED_YET',
-    };
+    return this.fabricGatewayService.getAuditAnchor(eventId);
   }
 
-  async verifyAuditAnchor(eventId: string) {
-    return {
-      eventId,
-      verified: false,
-      reason: 'Hyperledger connection is not implemented yet',
-    };
+  async verifyAuditAnchor(eventId: string, payloadHash: string) {
+    return this.fabricGatewayService.verifyAuditAnchor(eventId, payloadHash);
   }
 }

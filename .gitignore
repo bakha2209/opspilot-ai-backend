@@ -90,6 +90,7 @@ blockchain/fabric-samples/
 # Generated configs
 blockchain/*.block
 blockchain/*.tx
+blockchain/data/
 
 #################################################
 # Python AI
