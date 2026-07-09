@@ -4,15 +4,18 @@ import { BlockchainService } from './services/blokchain.service';
 import { FabricGatewayService } from './fabric/fabric-gateway.service';
 import { BlockchainPublisherService } from './services/blkchain-publisher.service';
 import { BlockchainAnchorWorker } from './workers/blokchain-anchor.worker';
+import { DatabaseModule } from '../libs/database/database.module';
+import { BlockchainAnchorProcessor } from './services/blockchain-anchor.processor';
 
 @Module({
-  imports: [],
+  imports: [DatabaseModule],
   controllers: [BlockchainController],
   providers: [
     BlockchainService,
     FabricGatewayService,
     BlockchainPublisherService,
     BlockchainAnchorWorker,
+    BlockchainAnchorProcessor,
   ],
   exports: [
     BlockchainService,

@@ -44,7 +44,68 @@ export class BlockchainController {
     return {
       success: true,
       message: 'Audit anchor verified',
-      data: await this.blockchainService.verifyAuditAnchor(eventId, payloadHash),
+      data: await this.blockchainService.verifyAuditAnchor(
+        eventId,
+        payloadHash,
+      ),
+    };
+  }
+
+  @Get('event/:eventId')
+  async getBlockchainEvent(@Param('eventId') eventId: string) {
+    return {
+      success: true,
+      message: 'Blockchain event retrieved',
+      data: await this.blockchainService.getBlockchainEvent(eventId),
+    };
+  }
+
+  @Post('event/:eventId/verify')
+  async verifyBlockchainEvent(
+    @Param('eventId') eventId: string,
+    @Body('payloadHash') payloadHash: string,
+  ) {
+    return {
+      success: true,
+      message: 'Blockchain event verified',
+      data: await this.blockchainService.verifyBlockchainEvent(
+        eventId,
+        payloadHash,
+      ),
+    };
+  }
+
+  @Post('retry/:auditLogId')
+  async retryAuditAnchor(@Param('auditLogId') auditLogId: string) {
+    return {
+      success: true,
+      message: 'Blockchain anchor retry queued',
+      data: await this.blockchainService.retryAuditAnchor(auditLogId),
+    };
+  }
+
+  @Post('retry-all')
+  async retryAllFailedAuditAnchors() {
+    return {
+      success: true,
+      message: 'Failed blockchain anchors requeued',
+      data: await this.blockchainService.retryAllFailedAuditAnchors(),
+    };
+  }
+
+  @Get('statistics')
+  async statistics() {
+    return {
+      success: true,
+      data: await this.blockchainService.getStatistics(),
+    };
+  }
+
+  @Get('health')
+  async health() {
+    return {
+      success: true,
+      data: await this.blockchainService.health(),
     };
   }
 }

@@ -30,6 +30,14 @@ export class BlockchainPublisherService {
     this.logger.log(`Blockchain anchor queued: ${message.eventId}`);
   }
 
+  async publishRetryAuditAnchor(message: BlockchainAnchorMessage) {
+    await this.publishAuditAnchor({
+      ...message,
+    });
+
+    this.logger.log(`Blockchain retry queued: ${message.eventId}`);
+  }
+
   private async connect() {
     const rabbitUrl =
       process.env.RABBITMQ_URL ?? 'amqp://guest:guest@rabbitmq:5672';

@@ -18,39 +18,32 @@ export class FabricGatewayService implements OnModuleDestroy {
   private contract: Contract | null = null;
   private client: grpc.Client | null = null;
 
-  private readonly channelName = 'audit-channel';
-  private readonly chaincodeName = 'audit-anchor';
+  private readonly channelName =
+    process.env.FABRIC_CHANNEL_NAME ?? 'audit-channel';
+
+  private readonly chaincodeName =
+    process.env.FABRIC_CHAINCODE_NAME ?? 'audit-anchor';
 
   async getContract(): Promise<Contract> {
     if (this.contract) {
       return this.contract;
     }
 
-    const rootPath = '/app';
+   const certPath = process.env.FABRIC_CERT_PATH!;
+   const keyPath = process.env.FABRIC_KEY_PATH!;
+   const tlsCertPath = process.env.FABRIC_TLS_CERT_PATH!;
 
-    const certPath = path.resolve(
-      rootPath,
-      'blockchain/organizations/peerOrganizations/org1.opspilot.com/users/Admin@org1.opspilot.com/msp/signcerts',
-    );
+   const peerEndpoint =
+     process.env.FABRIC_PEER_ENDPOINT ?? 'peer0.org1.opspilot.com:7051';
 
-    const keyPath = path.resolve(
-      rootPath,
-      'blockchain/organizations/peerOrganizations/org1.opspilot.com/users/Admin@org1.opspilot.com/msp/keystore',
-    );
-
-    const tlsCertPath = path.resolve(
-      rootPath,
-      'blockchain/organizations/peerOrganizations/org1.opspilot.com/peers/peer0.org1.opspilot.com/tls/ca.crt',
-    );
-
-    const peerEndpoint = 'peer0.org1.opspilot.com:7051';
-    const peerHostAlias = 'peer0.org1.opspilot.com';
+   const peerHostAlias =
+     process.env.FABRIC_PEER_HOST_ALIAS ?? 'peer0.org1.opspilot.com';
 
     const certFile = this.getFirstFile(certPath);
     const keyFile = this.getFirstFile(keyPath);
 
     const identity: Identity = {
-      mspId: 'Org1MSP',
+      mspId: process.env.FABRIC_MSP_ID ?? 'Org1MSP',
       credentials: fs.readFileSync(certFile),
     };
 
@@ -63,7 +56,7 @@ export class FabricGatewayService implements OnModuleDestroy {
       peerEndpoint,
       grpc.credentials.createSsl(tlsRootCert),
       {
-        'grpc.ssl_target_name_override': 'peer0.org1.opspilot.com',
+        'grpc.ssl_target_name_override': peerHostAlias,
       },
     );
 
@@ -174,5 +167,21 @@ export class FabricGatewayService implements OnModuleDestroy {
     const resultJson = new TextDecoder().decode(resultBytes);
 
     return JSON.parse(resultJson);
+  }
+
+  async healthCheck() {
+    const contract = await this.getContract();
+
+    await contract.evaluateTransaction(
+      'VerifyAuditAnchor',
+      'health-check-event',
+      'health-check-hash',
+    );
+
+    return {
+      status: 'UP',
+      channel: this.channelName,
+      chaincode: this.chaincodeName,
+    };
   }
 }

@@ -134,4 +134,49 @@ export class AuditLogRepository extends OrmRepository<AuditLogEntity> {
 
     return { items, totalItems };
   }
+
+  async findFailedBlockchainLogs(): Promise<AuditLogEntity[]> {
+    return this.findItemMany({
+      where: {
+        blockchainStatus: 'FAILED',
+        blockchainVerified: false,
+      },
+      order: { createdAt: 'ASC' },
+    });
+  }
+
+  async getBlockchainStatistics() {
+    const qb = this.createQueryBuilder('audit');
+
+    const [total, verified, pending, failed] = await Promise.all([
+      qb.getCount(),
+
+      this.count({
+        where: {
+          blockchainVerified: true,
+        },
+      }),
+
+      this.count({
+        where: {
+          blockchainStatus: 'PENDING',
+        },
+      }),
+
+      this.count({
+        where: {
+          blockchainStatus: 'FAILED',
+        },
+      }),
+    ]);
+
+    return {
+      total,
+      verified,
+      pending,
+      failed,
+      successRate:
+        total === 0 ? 100 : Number(((verified / total) * 100).toFixed(2)),
+    };
+  }
 }
