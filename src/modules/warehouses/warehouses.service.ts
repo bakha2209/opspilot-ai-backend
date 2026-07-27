@@ -41,6 +41,7 @@ export class WarehousesService {
   async findAll(currentUser: AuthPayload) {
     if (currentUser.role === UserRole.SUPER_ADMIN) {
       const warehouses = await this.warehouseRepository.findItemMany({
+        relations: { company: true },
         order: { createdAt: 'DESC' },
       });
 
@@ -58,6 +59,7 @@ export class WarehousesService {
     if (currentUser.role === UserRole.SUPER_ADMIN) {
       const warehouse = await this.warehouseRepository.findItemOne({
         where: { id },
+        relations: { company: true },
       });
 
       if (!warehouse) {

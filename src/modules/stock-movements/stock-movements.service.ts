@@ -14,6 +14,7 @@ export class StockMovementsService {
     if (currentUser.role === UserRole.SUPER_ADMIN) {
       const movements = await this.stockMovementRepository.findItemMany({
         relations: {
+          company: true,
           warehouse: true,
           product: true,
           user: true,
@@ -33,6 +34,24 @@ export class StockMovementsService {
   }
 
   async findByProduct(currentUser: AuthPayload, productId: string) {
+    if (currentUser.role === UserRole.SUPER_ADMIN) {
+      const movements = await this.stockMovementRepository.findItemMany({
+        where: { productId },
+        relations: {
+          company: true,
+          warehouse: true,
+          product: true,
+          user: true,
+        },
+        order: { createdAt: 'DESC' },
+      });
+
+      return apiSuccess(
+        'Product stock movements retrieved successfully',
+        movements,
+      );
+    }
+
     const companyId = this.getCompanyIdOrThrow(currentUser);
 
     const movements = await this.stockMovementRepository.findByProductId(

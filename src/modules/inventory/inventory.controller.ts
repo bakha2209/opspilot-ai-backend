@@ -1,9 +1,9 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UserRole } from '../../common/enums/user-role.enum';
 import { Auth } from '../auth/decorators/auth.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
-import  type{ AuthPayload } from '../auth/types/auth-payload.type';
+import type { AuthPayload } from '../auth/types/auth-payload.type';
 import { AdjustInventoryDto } from './dto/adjust-inventory.dto';
 import { StockMovementInputDto } from './dto/stock-movement-input.dto';
 import { InventoryService } from './inventory.service';
@@ -24,6 +24,18 @@ export class InventoryController {
   @ApiOperation({ summary: 'Get current company inventory' })
   findAll(@CurrentUser() currentUser: AuthPayload) {
     return this.inventoryService.findAll(currentUser);
+  }
+
+  @Get(':id')
+  @Auth(
+    UserRole.SUPER_ADMIN,
+    UserRole.COMPANY_ADMIN,
+    UserRole.OPERATIONS_MANAGER,
+    UserRole.WAREHOUSE_STAFF,
+  )
+  @ApiOperation({ summary: 'Get inventory record by ID' })
+  findOne(@CurrentUser() currentUser: AuthPayload, @Param('id') id: string) {
+    return this.inventoryService.findOne(currentUser, id);
   }
 
   @Post('stock-in')

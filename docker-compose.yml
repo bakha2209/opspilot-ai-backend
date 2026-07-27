@@ -8,7 +8,7 @@ services:
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
-      - "${POSTGRES_HOST_PORT:-5434}:5432"
+      - "127.0.0.1:${POSTGRES_HOST_PORT:-5434}:5432"
     volumes:
       - opspilot_pg_data:/var/lib/postgresql/data
     networks:
@@ -19,7 +19,7 @@ services:
     container_name: opspilot-redis
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     networks:
       - opspilot-network
 
@@ -31,8 +31,8 @@ services:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - "127.0.0.1:5672:5672"
+      - "127.0.0.1:15672:15672"
     networks:
       - opspilot-network
 
@@ -46,6 +46,9 @@ services:
       - .env
     environment:
       NODE_ENV: production
+      CORS_ORIGINS: ${CORS_ORIGINS:-https://app.opspilots.cc}
+      ENABLE_SWAGGER: ${ENABLE_SWAGGER:-false}
+      SIGNUP_ENABLED: ${SIGNUP_ENABLED:-false}
       DB_HOST: ${BACKEND_DB_HOST:-postgres}
       DB_PORT: ${BACKEND_DB_PORT:-5432}
       DB_SYNCHRONIZE: ${DB_SYNCHRONIZE}
@@ -53,7 +56,7 @@ services:
       RABBITMQ_URL: amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbitmq:5672
       AI_SERVICE_URL: ${AI_SERVICE_URL}
     ports:
-      - "4000:4000"
+      - "127.0.0.1:14000:4000"
     volumes:
       - opspilot_uploads:/app/uploads
       - ./blockchain:/app/blockchain
@@ -70,20 +73,60 @@ services:
       context: ./ai-service
       dockerfile: Dockerfile
     container_name: opspilot-ai-service
+    restart: unless-stopped
     env_file:
       - ./ai-service/app/.env
     environment:
       PYTHONUNBUFFERED: 1
-      OLLAMA_BASE_URL: http://host.docker.internal:11434
+      OLLAMA_BASE_URL: http://ollama:11434
+      OLLAMA_MODEL: qwen3:4b
       NEST_BACKEND_BASE_URL: http://backend:4000
       AI_INTERNAL_API_KEY: ${AI_INTERNAL_API_KEY}
     ports:
-      - "8008:8001"
+      - "127.0.0.1:8008:8001"
+    depends_on:
+      ollama-init:
+        condition: service_completed_successfully
+    networks:
+      - opspilot-network
+
+  ollama:
+    image: ollama/ollama:0.30.8
+    container_name: opspilot-ollama
+    restart: unless-stopped
+    environment:
+      CUDA_VISIBLE_DEVICES: "-1"
+      OLLAMA_CONTEXT_LENGTH: "4096"
+      OLLAMA_KEEP_ALIVE: "5m"
+      OLLAMA_MAX_LOADED_MODELS: "1"
+      OLLAMA_NUM_PARALLEL: "1"
+    cpus: 4.0
+    mem_limit: 8g
+    volumes:
+      - opspilot_ollama_data:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    networks:
+      - opspilot-network
+
+  ollama-init:
+    image: ollama/ollama:0.30.8
+    container_name: opspilot-ollama-init
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    command: ["pull", "qwen3:4b"]
+    depends_on:
+      ollama:
+        condition: service_healthy
     networks:
       - opspilot-network
 volumes:
   opspilot_pg_data:
   opspilot_uploads:
+  opspilot_ollama_data:
 
 networks:
   opspilot-network:

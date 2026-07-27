@@ -75,10 +75,24 @@ export class ProductRepository extends OrmRepository<ProductEntity> {
     return { items, totalItems };
   }
 
-  async findPaginatedAll(params: { page: number; limit: number }) {
-    const { page, limit } = params;
+  async findPaginatedAll(params: {
+    page: number;
+    limit: number;
+    search?: string;
+  }) {
+    const { page, limit, search } = params;
+
+    const where = search
+      ? [
+          { name: ILike(`%${search}%`) },
+          { sku: ILike(`%${search}%`) },
+          { barcode: ILike(`%${search}%`) },
+        ]
+      : {};
 
     const [items, totalItems] = await this.findAndCount({
+      where,
+      relations: { company: true, mainImage: true },
       order: { createdAt: 'DESC' },
       skip: (page - 1) * limit,
       take: limit,

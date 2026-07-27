@@ -7,16 +7,26 @@ import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'node:path';
+import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   const configService = app.get(ConfigService);
 
+  app.set('trust proxy', 1);
+  app.use(helmet());
   app.use(cookieParser());
 
+  const allowedOrigins = (
+    configService.get<string>('CORS_ORIGINS') || 'http://localhost:3000'
+  )
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
   app.enableCors({
-    origin: true,
+    origin: allowedOrigins,
     credentials: true,
   });
 
@@ -30,19 +40,23 @@ async function bootstrap() {
     }),
   );
 
-app.useGlobalFilters(new HttpExceptionFilter());  
+  app.useGlobalFilters(new HttpExceptionFilter());
 
-  const swaggerConfig = new DocumentBuilder()
-    .setTitle('OpsPilot AI API')
-    .setDescription('AI Operations Copilot Backend API')
-    .setVersion('1.0.0')
-    .addBearerAuth()
-    .build();
+  const swaggerEnabled =
+    configService.get<string>('ENABLE_SWAGGER') === 'true' ||
+    configService.get<string>('NODE_ENV') !== 'production';
 
-    
+  if (swaggerEnabled) {
+    const swaggerConfig = new DocumentBuilder()
+      .setTitle('OpsPilot AI API')
+      .setDescription('AI Operations Copilot Backend API')
+      .setVersion('1.0.0')
+      .addBearerAuth()
+      .build();
 
-  const document = SwaggerModule.createDocument(app, swaggerConfig);
-  SwaggerModule.setup('docs', app, document);
+    const document = SwaggerModule.createDocument(app, swaggerConfig);
+    SwaggerModule.setup('docs', app, document);
+  }
 
   const port = configService.get<number>('PORT') || 4000;
   app.useStaticAssets(join(process.cwd(), 'uploads'), {
@@ -51,7 +65,9 @@ app.useGlobalFilters(new HttpExceptionFilter());
   await app.listen(port);
 
   console.log(`OpsPilot AI backend running on http://localhost:${port}`);
-  console.log(`Swagger docs: http://localhost:${port}/docs`);
+  if (swaggerEnabled) {
+    console.log(`Swagger docs: http://localhost:${port}/docs`);
+  }
 }
 
 bootstrap();

@@ -33,6 +33,8 @@ import { AiMessageEntity } from './libs/database/entity/ai-message.entity';
 import { ScheduleModule } from '@nestjs/schedule';
 import { HealthModule } from './modules/health/health.module';
 import { BlockchainModule } from './blockchain/blockchain.module';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
@@ -40,6 +42,12 @@ import { BlockchainModule } from './blockchain/blockchain.module';
       isGlobal: true,
     }),
     ScheduleModule.forRoot(),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60_000,
+        limit: 120,
+      },
+    ]),
 
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
@@ -100,6 +108,12 @@ import { BlockchainModule } from './blockchain/blockchain.module';
     BlockchainModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {}

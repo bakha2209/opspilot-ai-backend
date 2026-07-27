@@ -1,13 +1,12 @@
-version: "3.8"
-
 networks:
   fabric-network:
     name: opspilot-fabric-network
 
 services:
   orderer.opspilot.com:
-    image: hyperledger/fabric-orderer:2.5
+    image: hyperledger/fabric-orderer:2.5.14
     container_name: orderer.opspilot.com
+    restart: unless-stopped
     environment:
       - FABRIC_LOGGING_SPEC=INFO
       - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
@@ -31,24 +30,26 @@ services:
       - ./organizations/ordererOrganizations/opspilot.com/orderers/orderer.opspilot.com/tls:/var/hyperledger/orderer/tls
       - orderer.opspilot.com:/var/hyperledger/production/orderer
     ports:
-      - "7050:7050"
+      - "127.0.0.1:7050:7050"
     networks:
       - fabric-network
 
   couchdb0:
     image: couchdb:3.3
     container_name: couchdb0
+    restart: unless-stopped
     environment:
       - COUCHDB_USER=admin
       - COUCHDB_PASSWORD=adminpw
     ports:
-      - "15984:5984"
+      - "127.0.0.1:15984:5984"
     networks:
       - fabric-network
 
   peer0.org1.opspilot.com:
-    image: hyperledger/fabric-peer:2.5
+    image: hyperledger/fabric-peer:2.5.14
     container_name: peer0.org1.opspilot.com
+    restart: unless-stopped
     environment:
       - FABRIC_CFG_PATH=/etc/hyperledger/fabric
       - FABRIC_LOGGING_SPEC=INFO
@@ -76,24 +77,26 @@ services:
     depends_on:
       - couchdb0
     ports:
-      - "7051:7051"
+      - "127.0.0.1:7051:7051"
     networks:
       - fabric-network
 
   couchdb1:
     image: couchdb:3.3
     container_name: couchdb1
+    restart: unless-stopped
     environment:
       - COUCHDB_USER=admin
       - COUCHDB_PASSWORD=adminpw
     ports:
-      - "16984:5984"
+      - "127.0.0.1:16984:5984"
     networks:
       - fabric-network
 
   peer0.org2.opspilot.com:
-    image: hyperledger/fabric-peer:2.5
+    image: hyperledger/fabric-peer:2.5.14
     container_name: peer0.org2.opspilot.com
+    restart: unless-stopped
     environment:
       - FABRIC_CFG_PATH=/etc/hyperledger/fabric
       - FABRIC_LOGGING_SPEC=INFO
@@ -121,7 +124,7 @@ services:
     depends_on:
       - couchdb1
     ports:
-      - "9051:9051"
+      - "127.0.0.1:9051:9051"
     networks:
       - fabric-network
 

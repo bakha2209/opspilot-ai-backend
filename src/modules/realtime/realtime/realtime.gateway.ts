@@ -21,7 +21,10 @@ type AuthenticatedSocket = Socket & {
 @WebSocketGateway({
   namespace: '/realtime',
   cors: {
-    origin: true,
+    origin: (process.env.CORS_ORIGINS ?? 'http://localhost:3000')
+      .split(',')
+      .map((origin) => origin.trim())
+      .filter(Boolean),
     credentials: true,
   },
 })

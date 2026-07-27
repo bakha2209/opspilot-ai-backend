@@ -129,6 +129,6 @@ export class DemoDataSeeder {
       } as Partial<InventoryEntity>),
     ]);
 
-    this.logger.log(`Demo data created. Login: ${email} / ${password}`);
+    this.logger.log(`Demo data created for ${email}`);
   }
 }

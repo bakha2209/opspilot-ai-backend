@@ -26,6 +26,7 @@ export class StockMovementsController {
 
   @Get('product/:productId')
   @Auth(
+    UserRole.SUPER_ADMIN,
     UserRole.COMPANY_ADMIN,
     UserRole.OPERATIONS_MANAGER,
     UserRole.WAREHOUSE_STAFF,

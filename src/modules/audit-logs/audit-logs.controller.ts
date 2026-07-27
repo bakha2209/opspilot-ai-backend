@@ -28,7 +28,11 @@ export class AuditLogsController {
   }
 
   @Get('resource/:resourceType/:resourceId')
-  @Auth(UserRole.COMPANY_ADMIN, UserRole.OPERATIONS_MANAGER)
+  @Auth(
+    UserRole.SUPER_ADMIN,
+    UserRole.COMPANY_ADMIN,
+    UserRole.OPERATIONS_MANAGER,
+  )
   @ApiOperation({ summary: 'Get audit logs by resource' })
   findByResource(
     @CurrentUser() currentUser: AuthPayload,
@@ -43,6 +47,11 @@ export class AuditLogsController {
   }
 
   @Post(':id/verify')
+  @Auth(
+    UserRole.SUPER_ADMIN,
+    UserRole.COMPANY_ADMIN,
+    UserRole.OPERATIONS_MANAGER,
+  )
   verify(@Param('id') id: string) {
     return this.auditLogsService.verifyAuditLog(id);
   }

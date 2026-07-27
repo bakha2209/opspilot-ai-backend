@@ -48,7 +48,7 @@ export class InventoryService {
   async findAll(currentUser: AuthPayload) {
     if (currentUser.role === UserRole.SUPER_ADMIN) {
       const inventory = await this.inventoryRepository.findItemMany({
-        relations: { warehouse: true, product: true },
+        relations: { company: true, warehouse: true, product: true },
         order: { createdAt: 'DESC' },
       });
 
@@ -59,6 +59,33 @@ export class InventoryService {
     const inventory = await this.inventoryRepository.findByCompanyId(companyId);
 
     return apiSuccess('Inventory retrieved successfully', inventory);
+  }
+
+  async findOne(currentUser: AuthPayload, id: string) {
+    if (currentUser.role === UserRole.SUPER_ADMIN) {
+      const inventory = await this.inventoryRepository.findItemOne({
+        where: { id },
+        relations: { company: true, warehouse: true, product: true },
+      });
+
+      if (!inventory) {
+        throw new NotFoundException('Inventory record not found');
+      }
+
+      return apiSuccess('Inventory record retrieved successfully', inventory);
+    }
+
+    const companyId = this.getCompanyIdOrThrow(currentUser);
+    const inventory = await this.inventoryRepository.findByIdAndCompanyId(
+      id,
+      companyId,
+    );
+
+    if (!inventory) {
+      throw new NotFoundException('Inventory record not found in your company');
+    }
+
+    return apiSuccess('Inventory record retrieved successfully', inventory);
   }
 
   private async checkLowStockAndNotify(

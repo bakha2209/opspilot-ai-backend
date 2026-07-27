@@ -98,6 +98,16 @@ export class AuditLogsService {
     resourceType: string,
     resourceId: string,
   ) {
+    if (currentUser.role === UserRole.SUPER_ADMIN) {
+      const logs = await this.auditLogRepository.findItemMany({
+        where: { resourceType, resourceId },
+        relations: { company: true, user: true },
+        order: { createdAt: 'DESC' },
+      });
+
+      return apiSuccess('Resource audit logs retrieved successfully', logs);
+    }
+
     const companyId = this.getCompanyIdOrThrow(currentUser);
 
     const logs = await this.auditLogRepository.findByResource({

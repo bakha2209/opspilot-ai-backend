@@ -4,6 +4,7 @@ import { FabricGatewayService } from '../fabric/fabric-gateway.service';
 import { BlockchainAnchorMessage } from '../types/blokchain-anchor-message.type';
 import { BlockchainStatus } from '../../modules/audit-logs/constants/blokchain-status.constant';
 import { BLOCKCHAIN_AUDIT_MAX_RETRY } from '../constants/blokchain-queue.constant';
+import { BlockchainConfigService } from '../config/blockchain-config.service';
 
 export type BlockchainAnchorPayload = BlockchainAnchorMessage & {
   retryCount?: number;
@@ -32,6 +33,7 @@ export class BlockchainAnchorProcessor {
   constructor(
     private readonly fabricGatewayService: FabricGatewayService,
     private readonly auditLogRepository: AuditLogRepository,
+    private readonly blockchainConfigService: BlockchainConfigService,
   ) {}
 
   async process(
@@ -87,7 +89,8 @@ export class BlockchainAnchorProcessor {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
 
-      const isFinalFailure = nextRetryCount >= BLOCKCHAIN_AUDIT_MAX_RETRY;
+      const isFinalFailure =
+        nextRetryCount >= this.blockchainConfigService.maxRetry;
 
       await this.auditLogRepository.update(payload.auditLogId, {
         blockchainStatus: isFinalFailure
@@ -107,24 +110,6 @@ export class BlockchainAnchorProcessor {
   }
 
   getRetryDelayMs(retryCount: number): number {
-    if (retryCount === 1) {
-      return process.env.BLOCKCHAIN_RETRY_DELAY_1
-        ? parseInt(process.env.BLOCKCHAIN_RETRY_DELAY_1, 10)
-        : 5_000;
-    }
-
-    if (retryCount === 2) {
-      return process.env.BLOCKCHAIN_RETRY_DELAY_2
-        ? parseInt(process.env.BLOCKCHAIN_RETRY_DELAY_2, 10)
-        : 30_000;
-    }
-
-    if (retryCount === 3) {
-      return process.env.BLOCKCHAIN_RETRY_DELAY_3
-        ? parseInt(process.env.BLOCKCHAIN_RETRY_DELAY_3, 10)
-        : 60_000;
-    }
-
-    return 60_000;
+    return this.blockchainConfigService.getRetryDelayMs(retryCount);
   }
 }

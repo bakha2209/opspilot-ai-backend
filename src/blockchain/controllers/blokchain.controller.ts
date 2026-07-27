@@ -1,8 +1,13 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { ApiBearerAuth } from '@nestjs/swagger';
+import { UserRole } from '../../common/enums/user-role.enum';
+import { Auth } from '../../modules/auth/decorators/auth.decorator';
 import { CreateAuditAnchorDto } from '../dto/create-audit-anchor.dto';
 import { BlockchainService } from '../services/blokchain.service';
 import { FabricGatewayService } from '../fabric/fabric-gateway.service';
 
+@ApiBearerAuth()
+@Auth(UserRole.SUPER_ADMIN, UserRole.COMPANY_ADMIN, UserRole.OPERATIONS_MANAGER)
 @Controller('blockchain')
 export class BlockchainController {
   constructor(

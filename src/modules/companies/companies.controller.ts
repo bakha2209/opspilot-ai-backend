@@ -24,7 +24,7 @@ export class CompaniesController {
 
   @Post()
   @Auth(UserRole.SUPER_ADMIN)
-  @ApiOperation({ summary: 'Create company/tenant' })
+  @ApiOperation({ summary: 'Create company/tenant and its administrator' })
   create(@Body() dto: CreateCompanyDto) {
     return this.companiesService.create(dto);
   }
