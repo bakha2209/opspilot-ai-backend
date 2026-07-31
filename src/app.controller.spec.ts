@@ -9,7 +9,9 @@ describe('AppController', () => {
     const app: TestingModule = await Test.createTestingModule({
       controllers: [AppController],
       providers: [AppService],
-    }).compile();
+    })
+      .useMocker(() => ({}))
+      .compile();
 
     appController = app.get<AppController>(AppController);
   });
@@ -17,8 +19,13 @@ describe('AppController', () => {
   describe('health', () => {
     it('should return health status', () => {
       expect(appController.health()).toMatchObject({
-        status: 'ok',
-        service: 'OpsPilot AI Backend',
+        success: true,
+        message: 'Service is healthy',
+        data: {
+          service: 'OpsPilot AI Backend',
+          timestamp: expect.any(String),
+        },
+        error: null,
       });
     });
   });

@@ -37,7 +37,7 @@ export class AiInternalController {
   recentStockMovements(@Body() dto: AiToolRequestDto) {
     return this.aiInternalService.recentStockMovements(
       dto.companyId,
-      Number(dto.limit ?? 20),
+      dto.limit ?? 20,
     );
   }
 

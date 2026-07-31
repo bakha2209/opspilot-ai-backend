@@ -8,7 +8,10 @@ import { apiSuccess } from '../../common/utils/api-response.utils';
 import { AuditLogQueryDto } from './dto/audit-log-query.dto';
 import { buildPaginationMeta } from '../../common/utils/pagination.util';
 import { BlockchainStatus } from './constants/blokchain-status.constant';
-import { createSha256Hash } from '../../libs/core/utils/hash.util';
+import {
+  createLegacySha256Hash,
+  createSha256Hash,
+} from '../../libs/core/utils/hash.util';
 import * as crypto from 'crypto';
 import { BlockchainPublisherService } from '../../blockchain/services/blkchain-publisher.service';
 import { BlockchainService } from '../../blockchain/services/blokchain.service';
@@ -127,12 +130,17 @@ export class AuditLogsService {
     return currentUser.companyId;
   }
 
-  async verifyAuditLog(id: string) {
+  async verifyAuditLog(currentUser: AuthPayload, id: string) {
     const audit = await this.auditLogRepository.findOne({
       where: { id },
     });
 
-    if (!audit || !audit.blockchainEventId) {
+    if (
+      !audit ||
+      (currentUser.role !== UserRole.SUPER_ADMIN &&
+        audit.companyId !== currentUser.companyId) ||
+      !audit.blockchainEventId
+    ) {
       throw new Error('Audit log not anchored');
     }
 
@@ -147,10 +155,35 @@ export class AuditLogsService {
     };
 
     const payloadHash = createSha256Hash(payload);
-
-    return this.blockchainService.verifyAuditAnchor(
+    const result = await this.blockchainService.verifyAuditAnchor(
       audit.blockchainEventId,
       payloadHash,
     );
+
+    if (result.verified) {
+      return {
+        ...result,
+        hashVersion: 'v2-recursive',
+        fullPayloadCoverage: true,
+      };
+    }
+
+    const legacyHash = createLegacySha256Hash(payload);
+    const legacyResult = await this.blockchainService.verifyAuditAnchor(
+      audit.blockchainEventId,
+      legacyHash,
+    );
+
+    return legacyResult.verified
+      ? {
+          ...legacyResult,
+          hashVersion: 'v1-legacy',
+          fullPayloadCoverage: false,
+        }
+      : {
+          ...result,
+          hashVersion: 'v2-recursive',
+          fullPayloadCoverage: true,
+        };
   }
 }

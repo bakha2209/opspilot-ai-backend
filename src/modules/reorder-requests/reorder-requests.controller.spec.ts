@@ -7,7 +7,9 @@ describe('ReorderRequestsController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [ReorderRequestsController],
-    }).compile();
+    })
+      .useMocker(() => ({}))
+      .compile();
 
     controller = module.get<ReorderRequestsController>(ReorderRequestsController);
   });

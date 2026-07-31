@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigService } from '@nestjs/config';
 import { EventsService } from './events.service';
 
 describe('EventsService', () => {
@@ -6,8 +7,13 @@ describe('EventsService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [EventsService],
-    }).compile();
+      providers: [
+        EventsService,
+        { provide: ConfigService, useValue: { get: jest.fn() } },
+      ],
+    })
+      .useMocker(() => ({}))
+      .compile();
 
     service = module.get<EventsService>(EventsService);
   });

@@ -7,7 +7,9 @@ describe('RealtimeGateway', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [RealtimeGateway],
-    }).compile();
+    })
+      .useMocker(() => ({}))
+      .compile();
 
     gateway = module.get<RealtimeGateway>(RealtimeGateway);
   });

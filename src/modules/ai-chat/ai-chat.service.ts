@@ -149,7 +149,7 @@ export class AiChatService {
       throw new NotFoundException('Conversation not found');
     }
 
-    await this.aiMessageRepository.createAndSaveItem({
+    const userMessage = await this.aiMessageRepository.createAndSaveItem({
       conversationId: conversation.id,
       role: 'user',
       content: dto.message,
@@ -170,10 +170,12 @@ export class AiChatService {
 
       context,
 
-      history: history.map((message) => ({
-        role: message.role,
-        content: message.content,
-      })),
+      history: history
+        .filter((message) => message.id !== userMessage.id)
+        .map((message) => ({
+          role: message.role,
+          content: message.content,
+        })),
 
       confirmed_action: dto.confirmedAction ?? null,
     });
@@ -248,7 +250,7 @@ export class AiChatService {
       throw new NotFoundException('Conversation not found');
     }
 
-    await this.aiMessageRepository.createAndSaveItem({
+    const userMessage = await this.aiMessageRepository.createAndSaveItem({
       conversationId: conversation.id,
       role: 'user',
       content: dto.message,
@@ -269,10 +271,12 @@ export class AiChatService {
 
       context,
 
-      history: history.map((message) => ({
-        role: message.role,
-        content: message.content,
-      })),
+      history: history
+        .filter((message) => message.id !== userMessage.id)
+        .map((message) => ({
+          role: message.role,
+          content: message.content,
+        })),
 
       confirmed_action: dto.confirmedAction ?? null,
     });

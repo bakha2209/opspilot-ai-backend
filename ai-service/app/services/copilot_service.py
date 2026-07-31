@@ -1,5 +1,7 @@
 import json
+import re
 from collections.abc import AsyncGenerator
+from app.core.config import settings
 from app.prompts.copilot_prompt import build_copilot_prompt
 from app.prompts.tool_decision_prompt import build_tool_decision_prompt
 from app.schemas.copilot_schema import (
@@ -28,7 +30,11 @@ class CopilotService:
             action_confirmed=request.confirmed_action is not None,
         )
 
-        raw_output = await self.llm_service.generate(prompt)
+        raw_output = await self.llm_service.generate(
+            prompt,
+            max_tokens=settings.OLLAMA_RESPONSE_MAX_TOKENS,
+            json_output=True,
+        )
 
         return self._parse_response(raw_output)
 
@@ -39,7 +45,11 @@ class CopilotService:
         confirmed_action: dict | None = None,
     ) -> ToolDecision:
         prompt = build_tool_decision_prompt(message, history, confirmed_action)
-        raw_output = await self.llm_service.generate(prompt)
+        raw_output = await self.llm_service.generate(
+            prompt,
+            max_tokens=settings.OLLAMA_TOOL_MAX_TOKENS,
+            json_output=True,
+        )
 
         try:
             cleaned = self._clean_json_output(raw_output)
@@ -133,12 +143,25 @@ class CopilotService:
             )
 
     def _clean_json_output(self, raw_output: str) -> str:
-        cleaned = raw_output.strip()
+        cleaned = re.sub(
+            r"<think>.*?</think>",
+            "",
+            raw_output,
+            flags=re.DOTALL | re.IGNORECASE,
+        ).strip()
 
         if cleaned.startswith("```json"):
             cleaned = cleaned.replace("```json", "").replace("```", "").strip()
         elif cleaned.startswith("```"):
             cleaned = cleaned.replace("```", "").strip()
+
+        object_start = cleaned.find("{")
+        if object_start >= 0:
+            try:
+                _, end = json.JSONDecoder().raw_decode(cleaned[object_start:])
+                return cleaned[object_start : object_start + end]
+            except json.JSONDecodeError:
+                pass
 
         return cleaned
 

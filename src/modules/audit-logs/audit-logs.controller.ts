@@ -52,7 +52,10 @@ export class AuditLogsController {
     UserRole.COMPANY_ADMIN,
     UserRole.OPERATIONS_MANAGER,
   )
-  verify(@Param('id') id: string) {
-    return this.auditLogsService.verifyAuditLog(id);
+  verify(
+    @CurrentUser() currentUser: AuthPayload,
+    @Param('id') id: string,
+  ) {
+    return this.auditLogsService.verifyAuditLog(currentUser, id);
   }
 }

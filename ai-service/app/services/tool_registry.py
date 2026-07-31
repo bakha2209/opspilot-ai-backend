@@ -30,11 +30,6 @@ AVAILABLE_TOOLS = [
         },
     },
     {
-        "name": "create_stock_adjustment",
-        "description": "Create stock adjustment request",
-        "arguments": {"product_id": "uuid", "quantity": "number"},
-    },
-    {
         "name": "get_top_moving_products",
         "description": "Returns products with the highest stock movement quantity in a recent period.",
         "arguments": {"days": "number, optional", "limit": "number, optional"},

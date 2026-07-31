@@ -24,6 +24,13 @@ export class FabricGatewayService implements OnModuleDestroy {
   private readonly chaincodeName =
     process.env.FABRIC_CHAINCODE_NAME ?? 'audit-anchor';
 
+  getNetworkMetadata() {
+    return {
+      channel: this.channelName,
+      chaincode: this.chaincodeName,
+    };
+  }
+
   async getContract(): Promise<Contract> {
     if (this.contract) {
       return this.contract;

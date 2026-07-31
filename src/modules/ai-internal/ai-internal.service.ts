@@ -90,7 +90,33 @@ export class AiInternalService {
     );
 
     return {
-      items,
+      items: items.map((item) => ({
+        id: item.id,
+        type: item.type,
+        quantity: item.quantity,
+        beforeQuantity: item.beforeQuantity,
+        afterQuantity: item.afterQuantity,
+        reason: item.reason ?? null,
+        memo: item.memo ?? null,
+        createdAt: item.createdAt,
+        product: {
+          id: item.productId,
+          name: item.product.name,
+          sku: item.product.sku,
+          unit: item.product.unit,
+        },
+        warehouse: {
+          id: item.warehouseId,
+          name: item.warehouse.name,
+          code: item.warehouse.code,
+        },
+        performedBy: item.user
+          ? {
+              id: item.user.id,
+              name: item.user.name,
+            }
+          : null,
+      })),
     };
   }
 

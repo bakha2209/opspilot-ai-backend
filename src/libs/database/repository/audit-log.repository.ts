@@ -135,9 +135,12 @@ export class AuditLogRepository extends OrmRepository<AuditLogEntity> {
     return { items, totalItems };
   }
 
-  async findFailedBlockchainLogs(): Promise<AuditLogEntity[]> {
+  async findFailedBlockchainLogs(
+    companyId?: string,
+  ): Promise<AuditLogEntity[]> {
     return this.findItemMany({
       where: {
+        ...(companyId ? { companyId } : {}),
         blockchainStatus: 'FAILED',
         blockchainVerified: false,
       },
@@ -145,26 +148,29 @@ export class AuditLogRepository extends OrmRepository<AuditLogEntity> {
     });
   }
 
-  async getBlockchainStatistics() {
-    const qb = this.createQueryBuilder('audit');
+  async getBlockchainStatistics(companyId?: string) {
+    const companyWhere = companyId ? { companyId } : {};
 
     const [total, verified, pending, failed] = await Promise.all([
-      qb.getCount(),
+      this.count({ where: companyWhere }),
 
       this.count({
         where: {
+          ...companyWhere,
           blockchainVerified: true,
         },
       }),
 
       this.count({
         where: {
+          ...companyWhere,
           blockchainStatus: 'PENDING',
         },
       }),
 
       this.count({
         where: {
+          ...companyWhere,
           blockchainStatus: 'FAILED',
         },
       }),

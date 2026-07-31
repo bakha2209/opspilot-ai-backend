@@ -55,7 +55,9 @@ describe('CompaniesService', () => {
         { provide: SecurityBcryptJsService, useValue: bcryptService },
         { provide: DataSource, useValue: dataSource },
       ],
-    }).compile();
+    })
+      .useMocker(() => ({}))
+      .compile();
 
     service = module.get<CompaniesService>(CompaniesService);
   });
